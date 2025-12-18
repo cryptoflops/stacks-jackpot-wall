@@ -222,18 +222,30 @@ export default function Jackpot() {
                 icon: window.location.origin + '/favicon.ico',
             },
             onFinish: (data: any) => {
+                console.log('✅ Transaction broadcasted:', data);
                 setMessage('');
                 setTimeout(async () => {
                     const newCount = await refreshData();
                     await fetchEvents(newCount);
-                }, 4000); // Wait a bit for chain update
+                }, 4000);
+            },
+            onCancel: () => {
+                console.log('❌ Transaction cancelled by user');
+                setIsLoading(false);
             }
         };
+
+        console.log('🚀 Triggering transaction with options:', {
+            ...options,
+            network: IS_MAINNET ? 'mainnet' : 'testnet',
+            args: options.functionArgs.map(a => cvToJSON(a))
+        });
 
         try {
             await openContractCall(options);
         } catch (e) {
-            console.error(e);
+            console.error('❌ Failed to create transaction:', e);
+            alert('Error creating transaction. Check your browser console for details.');
         } finally {
             setIsLoading(false);
         }
@@ -360,6 +372,7 @@ export default function Jackpot() {
                         )}
                         <p className="truncate">USER: <span className="text-zinc-300">{getUserAddress() || 'NONE'}</span></p>
                         <div className="pt-1 border-t border-white/10 flex flex-col gap-1">
+                            <p>FEE: 0.1 STX (100,000 μSTX)</p>
                             <p>POT: {potBalance} μSTX</p>
                             <p>COUNT: {postCount}</p>
                             <p>EVENTS: {events.length}</p>
