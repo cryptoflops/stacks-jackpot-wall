@@ -7,51 +7,48 @@ import * as THREE from 'three';
 const fragmentShader = `
 uniform float time;
 uniform vec2 resolution;
-uniform vec2 mouse;
+uniform vec2 uMouse;
 
 varying vec2 vUv;
 
 void main() {
-    // Normalizing UV to -1.0 to 1.0 range based on aspect ratio
     vec2 p = -1.0 + 2.0 * vUv;
     p.x *= resolution.x / resolution.y;
     
     // Mouse influence
-    vec2 m = (mouse - 0.5) * 2.0;
+    vec2 m = uMouse * 2.0 - 1.0;
     m.x *= resolution.x / resolution.y;
-    float distToMouse = length(p - m);
     
     float d = length(p);
+    float distToMouse = length(p - m);
 
     // Deep Midnight Purple Base
-    vec3 color = vec3(0.015, 0.01, 0.05);
-
-    // Interactive Distortion
-    float distortion = 0.1 / (distToMouse + 0.5);
-    p += (p - m) * distortion * 0.5;
+    vec3 color = vec3(0.01, 0.005, 0.03);
 
     // Aurora Waves
-    for(float i = 1.0; i < 4.0; i++) {
-        p.x += (0.3 / i) * sin(i * 3.0 * p.y + time + i * 14.0 + m.x * 0.5);
-        p.y += (0.4 / i) * cos(i * 2.5 * p.x + time + i * 18.0 + m.y * 0.5);
+    for(float i = 1.0; i < 5.0; i++) {
+        // Distortion influenced by mouse
+        float mouseDistort = 0.2 / (distToMouse + 0.5) * exp(-distToMouse * 2.0);
         
-        float intensity = 0.005 / abs(p.y + sin(p.x * 2.0 + time * 0.2));
+        p.x += 0.3 / i * sin(i * 3.0 * p.y + time + i * 14.0) + mouseDistort * m.x;
+        p.y += 0.4 / i * cos(i * 2.5 * p.x + time + i * 18.0) + mouseDistort * m.y;
         
-        // Dynamic Glow based on mouse proximity
-        float glow = 1.0 + 0.5 / (distToMouse + 1.0);
+        float intensity = 0.006 / abs(p.y + sin(p.x * 1.5 + time * 0.2));
         
-        // Stacks Purple & Deep Zinc tones
-        vec3 auroraColor = vec3(0.25, 0.2, 0.8) * intensity * glow;
-        if(i > 2.0) auroraColor = vec3(0.99, 0.39, 0.2) * (intensity * 0.4 * glow); // Subtle accent
+        // Dynamic colors
+        vec3 auroraColor = vec3(0.3, 0.2, 0.9) * intensity;
+        if(i > 2.0) auroraColor = vec3(1.0, 0.4, 0.2) * (intensity * 0.5);
+        if(i > 3.0) auroraColor = vec3(0.1, 0.8, 0.6) * (intensity * 0.3);
         
-        color += auroraColor;
+        color += auroraColor * (1.0 + mouseDistort * 2.0);
     }
 
-    // Secondary interactive glow
-    color += vec3(0.33, 0.27, 1.0) * (0.02 / (distToMouse + 0.15));
+    // Glow at mouse position
+    float light = 0.05 / (distToMouse + 0.1);
+    color += vec3(0.3, 0.2, 1.0) * light * 0.5;
 
     // Vignette
-    color *= 1.2 - d * 0.4;
+    color *= 1.1 - d * 0.4;
 
     gl_FragColor = vec4(color, 1.0);
 }
@@ -72,21 +69,20 @@ function AuroraMaterial() {
     const uniforms = useMemo(() => ({
         time: { value: 0 },
         resolution: { value: new THREE.Vector2(size.width, size.height) },
-        mouse: { value: new THREE.Vector2(0.5, 0.5) }
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) }
     }), []);
 
     useFrame((state) => {
         if (meshRef.current) {
             const material = meshRef.current.material as THREE.ShaderMaterial;
-            material.uniforms.time.value = state.clock.getElapsedTime() * 0.5;
+            material.uniforms.time.value = state.clock.getElapsedTime() * 0.4;
             material.uniforms.resolution.value.set(state.size.width, state.size.height);
 
-            // Smoothly interpolate mouse position for fluid movement
+            // Smoothly move mouse uniform
             const targetX = state.mouse.x * 0.5 + 0.5;
             const targetY = state.mouse.y * 0.5 + 0.5;
-
-            material.uniforms.mouse.value.x += (targetX - material.uniforms.mouse.value.x) * 0.1;
-            material.uniforms.mouse.value.y += (targetY - material.uniforms.mouse.value.y) * 0.1;
+            material.uniforms.uMouse.value.x += (targetX - material.uniforms.uMouse.value.x) * 0.05;
+            material.uniforms.uMouse.value.y += (targetY - material.uniforms.uMouse.value.y) * 0.05;
         }
     });
 
