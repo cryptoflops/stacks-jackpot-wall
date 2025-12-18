@@ -87,6 +87,12 @@ export default function Landing({ onConnect }: LandingProps) {
             >
                 <div className="w-px h-12 bg-gradient-to-b from-white to-transparent mx-auto" />
             </motion.div>
+            {/* Footer Links */}
+            <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+                <a href="https://github.com/cryptoflops/stacks-jackpot-wall" target="_blank" rel="noopener noreferrer" className="hover:text-[#5546FF] transition-colors">GitHub Repo</a>
+                <a href="https://passport.talentprotocol.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[#fc6432] transition-colors">Talent App</a>
+                <a href="https://stacks.co/" target="_blank" rel="noopener noreferrer" className="hover:text-[#5546FF] transition-colors">Stacks Project</a>
+            </div>
         </div>
     );
 }
