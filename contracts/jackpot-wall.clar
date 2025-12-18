@@ -8,7 +8,7 @@
 (define-constant err-msg-too-long (err u101))
 
 ;; Constants
-(define-constant COST_PER_POST u1000000) ;; 1 STX
+(define-constant COST_PER_POST u100000) ;; 0.1 STX
 (define-constant WIN_INTERVAL u10)
 (define-constant PAYOUT_RATIO u90) ;; 90%
 

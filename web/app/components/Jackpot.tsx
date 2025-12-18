@@ -405,7 +405,7 @@ export default function Jackpot() {
                                         Processing...
                                     </span>
                                 ) : isConnected ? (
-                                    "POST MESSAGE (1 STX)"
+                                    "POST MESSAGE (0.1 STX)"
                                 ) : (
                                     "CONNECT WALLET TO POST"
                                 )}
