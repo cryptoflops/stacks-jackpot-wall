@@ -3,6 +3,7 @@
 import { Connect } from '@stacks/connect-react';
 import { ReactNode } from 'react';
 import { userSession } from '@/lib/stacks';
+import { ReactLenis } from '@studio-freight/react-lenis';
 
 export function Providers({ children }: { children: ReactNode }) {
     const authOptions = {
@@ -18,8 +19,10 @@ export function Providers({ children }: { children: ReactNode }) {
     };
 
     return (
-        <Connect authOptions={authOptions}>
-            {children}
-        </Connect>
+        <ReactLenis root>
+            <Connect authOptions={authOptions}>
+                {children}
+            </Connect>
+        </ReactLenis>
     );
 }

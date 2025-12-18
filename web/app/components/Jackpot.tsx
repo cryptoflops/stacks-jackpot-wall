@@ -225,9 +225,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
         : events;
 
     return (
-        <div className="w-full max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-8 p-4 lg:p-8">
+        <div className="w-full max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-4 lg:gap-8 p-4 lg:p-8">
             {/* Sidebar / Navigation */}
-            <aside className="flex flex-col gap-6 lg:h-[calc(100vh-100px)] lg:sticky lg:top-12">
+            <aside className="flex flex-col gap-4 lg:gap-6 lg:h-[calc(100vh-100px)] lg:sticky lg:top-12">
                 <button
                     onClick={onBackToLanding}
                     className="flex items-center gap-4 px-2 hover:opacity-80 transition-all text-left group"
@@ -246,26 +246,26 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                     </div>
                 </button>
 
-                <nav className="flex flex-col gap-2">
+                <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
                     <button
                         onClick={() => setActiveTab('board')}
                         className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold tracking-tight",
+                            "flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold tracking-tight shrink-0",
                             activeTab === 'board' ? "bg-white/10 text-white border border-white/10 shadow-xl" : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
                         )}
                     >
-                        <TrendingUp className={cn("w-5 h-5", activeTab === 'board' ? "text-[#5546FF]" : "text-zinc-500")} />
+                        <TrendingUp className={cn("w-4 lg:w-5 h-4 lg:h-5", activeTab === 'board' ? "text-[#5546FF]" : "text-zinc-500")} />
                         The Wall
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
                         className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold tracking-tight",
+                            "flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold tracking-tight shrink-0",
                             activeTab === 'history' ? "bg-white/10 text-white border border-white/10 shadow-xl" : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
                         )}
                     >
-                        <History className={cn("w-5 h-5", activeTab === 'history' ? "text-[#5546FF]" : "text-zinc-500")} />
-                        My Ledger
+                        <History className={cn("w-4 lg:w-5 h-4 lg:h-5", activeTab === 'history' ? "text-[#5546FF]" : "text-zinc-500")} />
+                        Message History
                     </button>
                 </nav>
 
@@ -318,7 +318,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             className="flex flex-col gap-8"
                         >
                             {/* Jackpot Card */}
-                            <section className="relative overflow-hidden glass-card !p-12 flex flex-col items-center justify-center text-center gap-8 group !bg-white/5 border border-white/10">
+                            <section className="relative overflow-hidden glass-card p-6 lg:p-12 flex flex-col items-center justify-center text-center gap-6 lg:gap-8 group !bg-white/5 border border-white/10">
                                 <div className="absolute inset-0 bg-gradient-to-br from-[#5546FF]/10 via-transparent to-[#fc6432]/5 pointer-events-none" />
 
                                 <button
@@ -329,14 +329,14 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                 </button>
 
                                 <div className="relative">
-                                    <div className="absolute inset-0 bg-[#5546FF]/30 blur-[100px] rounded-full animate-pulse" />
-                                    <Trophy className="w-24 h-24 text-amber-300 relative z-10 drop-shadow-[0_0_30px_rgba(252,211,77,0.3)]" />
+                                    <div className="absolute inset-0 bg-[#5546FF]/30 blur-[60px] lg:blur-[100px] rounded-full animate-pulse" />
+                                    <Trophy className="w-16 lg:w-24 h-16 lg:h-24 text-amber-300 relative z-10 drop-shadow-[0_0_30px_rgba(252,211,77,0.3)]" />
                                 </div>
 
                                 <div className="flex flex-col gap-2 z-10">
                                     <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#5546FF] animate-pulse">Cumulative Jackpot</p>
-                                    <h2 className="text-8xl font-black tracking-tighter text-white">
-                                        {(potBalance / 1000000).toFixed(2)} <span className="text-3xl text-zinc-600 font-bold -ml-2">STX</span>
+                                    <h2 className="text-5xl lg:text-8xl font-black tracking-tighter text-white">
+                                        {(potBalance / 1000000).toFixed(2)} <span className="text-xl lg:text-3xl text-zinc-600 font-bold -ml-2">STX</span>
                                     </h2>
                                 </div>
 
@@ -358,8 +358,8 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             </section>
 
                             {/* Action Grid */}
-                            <div className="grid xl:grid-cols-[1fr_380px] gap-8">
-                                <div className="glass-card !bg-white/5 border border-white/10 p-8 flex flex-col gap-6">
+                            <div className="grid lg:grid-cols-[1fr_380px] gap-4 lg:gap-8">
+                                <div className="glass-card !bg-white/5 border border-white/10 p-6 lg:p-8 flex flex-col gap-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 rounded-xl bg-[#5546FF]/10 text-[#5546FF]">
@@ -390,7 +390,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                     </button>
                                 </div>
 
-                                <div className="glass-card !bg-white/5 border border-white/10 p-8 flex flex-col gap-6 h-[500px]">
+                                <div className="glass-card !bg-white/5 border border-white/10 p-6 lg:p-8 flex flex-col gap-6 h-[400px] lg:h-[500px]">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
@@ -436,9 +436,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             exit={{ opacity: 0, x: 20 }}
                             className="glass-card !bg-white/5 border border-white/10 p-12 min-h-[600px] flex flex-col gap-8"
                         >
-                            <h2 className="text-4xl font-black text-white tracking-tighter flex items-center gap-4">
+                            <h2 className="text-3xl lg:text-4xl font-black text-white tracking-tighter flex items-center gap-4">
                                 <History className="w-10 h-10 text-[#5546FF]" />
-                                Your Ledger
+                                Message History
                             </h2>
                             <div className="grid gap-4">
                                 {filteredEvents.length === 0 ? (
