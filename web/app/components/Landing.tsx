@@ -1,37 +1,18 @@
 'use client';
 
 import React from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Zap, Wallet, ArrowRight } from 'lucide-react';
 import WebGLBackground from './WebGLBackground';
-import { useRef, useEffect } from 'react';
+import Footer from './Footer';
 
 interface LandingProps {
     onConnect: () => void;
 }
 
 export default function Landing({ onConnect }: LandingProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-
-    // Smooth movement for the "light"
-    const springX = useSpring(mouseX, { stiffness: 100, damping: 30 });
-    const springY = useSpring(mouseY, { stiffness: 100, damping: 30 });
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        mouseX.set(e.clientX - rect.left);
-        mouseY.set(e.clientY - rect.top);
-    };
-
     return (
-        <div
-            ref={containerRef}
-            onMouseMove={handleMouseMove}
-            className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden cursor-none"
-        >
+        <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
             <WebGLBackground />
 
             <motion.div
@@ -51,63 +32,13 @@ export default function Landing({ onConnect }: LandingProps) {
                     <span className="text-[10px] font-black text-white/80 uppercase tracking-[0.3em]">Built on Stacks</span>
                 </motion.div>
 
-                {/* Hero Title with Layered Contour */}
-                <div className="relative mb-8 select-none group/title">
-                    {/* Base Text */}
-                    <h1 className="text-6xl lg:text-[10rem] font-black tracking-tighter text-white leading-[0.85] relative z-10">
-                        JACKPOT<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5546FF] via-[#fc6432] to-[#5546FF] animate-gradient-x bg-[length:200%_auto] drop-shadow-[0_0_30px_rgba(85,70,255,0.3)]">
-                            WALL
-                        </span>
-                    </h1>
-
-                    {/* Static Stroke Backdrop */}
-                    <h1
-                        className="text-6xl lg:text-[10rem] font-black tracking-tighter text-transparent leading-[0.85] absolute inset-0 pointer-events-none opacity-20"
-                        style={{ WebkitTextStroke: '1px rgba(255,255,255,0.5)' }}
-                    >
-                        JACKPOT<br />
+                {/* Hero Title */}
+                <h1 className="text-6xl lg:text-[10rem] font-black mb-8 tracking-tighter text-white leading-[0.85]">
+                    JACKPOT<br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5546FF] via-[#fc6432] to-[#5546FF] animate-gradient-x bg-[length:200%_auto] drop-shadow-[0_0_30px_rgba(85,70,255,0.3)]">
                         WALL
-                    </h1>
-
-                    {/* Dynamic Spotlight Contour */}
-                    <motion.h1
-                        className="text-6xl lg:text-[10rem] font-black tracking-tighter text-transparent leading-[0.85] absolute inset-0 pointer-events-none z-20"
-                        style={{
-                            WebkitTextStroke: '1.5px #5546FF',
-                            maskImage: useTransform(
-                                [springX, springY],
-                                ([x, y]) => `radial-gradient(300px circle at ${x}px ${y}px, black 0%, transparent 100%)`
-                            ),
-                            WebkitMaskImage: useTransform(
-                                [springX, springY],
-                                ([x, y]) => `radial-gradient(300px circle at ${x}px ${y}px, black 0%, transparent 100%)`
-                            )
-                        }}
-                    >
-                        JACKPOT<br />
-                        WALL
-                    </motion.h1>
-
-                    {/* Secondary Accent Highlight */}
-                    <motion.h1
-                        className="text-6xl lg:text-[10rem] font-black tracking-tighter text-transparent leading-[0.85] absolute inset-0 pointer-events-none z-20"
-                        style={{
-                            WebkitTextStroke: '1.5px #fc6432',
-                            maskImage: useTransform(
-                                [springX, springY],
-                                ([x, y]) => `radial-gradient(150px circle at ${x}px ${y}px, black 0%, transparent 100%)`
-                            ),
-                            WebkitMaskImage: useTransform(
-                                [springX, springY],
-                                ([x, y]) => `radial-gradient(150px circle at ${x}px ${y}px, black 0%, transparent 100%)`
-                            )
-                        }}
-                    >
-                        JACKPOT<br />
-                        WALL
-                    </motion.h1>
-                </div>
+                    </span>
+                </h1>
 
                 <p className="max-w-xs lg:max-w-lg text-zinc-400 text-base lg:text-xl mb-12 leading-relaxed font-medium px-4 opacity-80">
                     The decentralized scoreboard where history is etched on-chain. <br className="hidden lg:block" />
@@ -117,7 +48,7 @@ export default function Landing({ onConnect }: LandingProps) {
                 {/* Main CTA */}
                 <button
                     onClick={onConnect}
-                    className="group relative flex items-center gap-4 px-10 py-5 lg:px-14 lg:py-6 bg-white text-black font-black rounded-[2rem] hover:scale-105 transition-all duration-500 shadow-2xl overflow-hidden active:scale-95 cursor-pointer z-30"
+                    className="group relative flex items-center gap-4 px-10 py-5 lg:px-14 lg:py-6 bg-white text-black font-black rounded-[2rem] hover:scale-105 transition-all duration-500 shadow-2xl overflow-hidden"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     <Wallet className="w-6 h-6 flex-shrink-0" />
@@ -153,26 +84,14 @@ export default function Landing({ onConnect }: LandingProps) {
             <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/20"
+                className="absolute bottom-32 left-1/2 -translate-x-1/2 text-white/20"
             >
                 <div className="w-px h-12 bg-gradient-to-b from-white to-transparent mx-auto" />
             </motion.div>
-            {/* Footer Links */}
-            <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                <a href="https://github.com/cryptoflops/stacks-jackpot-wall" target="_blank" rel="noopener noreferrer" className="hover:text-[#5546FF] transition-colors">GitHub Repo</a>
-                <a href="https://passport.talentprotocol.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[#fc6432] transition-colors">Talent App</a>
-                <a href="https://stacks.co/" target="_blank" rel="noopener noreferrer" className="hover:text-[#5546FF] transition-colors">Stacks Project</a>
-            </div>
 
-            {/* Custom Cursor */}
-            <motion.div
-                className="fixed w-4 h-4 rounded-full bg-white mix-blend-difference pointer-events-none z-[9999] hidden lg:block"
-                style={{ x: springX, y: springY, translateX: '-50%', translateY: '-50%' }}
-            />
-            <motion.div
-                className="fixed w-12 h-12 rounded-full border border-white/20 pointer-events-none z-[9999] hidden lg:block"
-                style={{ x: springX, y: springY, translateX: '-50%', translateY: '-50%' }}
-            />
+            <div className="mt-auto w-full">
+                <Footer />
+            </div>
         </div>
     );
 }

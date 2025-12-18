@@ -23,6 +23,7 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Footer from './Footer';
 
 // Types
 interface FeedEvent {
@@ -398,22 +399,6 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                         </div>
                     )}
                 </div>
-
-                {/* Footer Links */}
-                <div className="mt-8 pt-8 border-t border-white/5 flex flex-col gap-4 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600">
-                    <a href="https://github.com/cryptoflops/stacks-jackpot-wall" target="_blank" rel="noopener noreferrer" className="hover:text-[#5546FF] transition-colors flex items-center gap-2">
-                        <div className="w-1 h-1 rounded-full bg-zinc-800" />
-                        GitHub Repo
-                    </a>
-                    <a href="https://passport.talentprotocol.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[#fc6432] transition-colors flex items-center gap-2">
-                        <div className="w-1 h-1 rounded-full bg-zinc-800" />
-                        Talent App
-                    </a>
-                    <a href="https://stacks.co/" target="_blank" rel="noopener noreferrer" className="hover:text-[#5546FF] transition-colors flex items-center gap-2">
-                        <div className="w-1 h-1 rounded-full bg-zinc-800" />
-                        Stacks Project
-                    </a>
-                </div>
             </aside>
 
             {/* Main Content Viewport */}
@@ -633,6 +618,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                <Footer />
             </main>
         </div>
     );
