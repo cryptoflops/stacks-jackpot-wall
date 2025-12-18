@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useConnect } from '@stacks/connect-react';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { openContractCall } from '@stacks/connect';
-import { uintCV, stringUtf8CV, cvToJSON, fetchCallReadOnlyFunction } from '@stacks/transactions';
+import { uintCV, stringUtf8CV, cvToJSON, fetchCallReadOnlyFunction, PostConditionMode } from '@stacks/transactions';
 import { userSession } from '@/lib/stacks';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -220,6 +220,7 @@ export default function Jackpot() {
             functionName: 'post-message',
             functionArgs: [stringUtf8CV(message)],
             network: CURRENT_NETWORK,
+            postConditionMode: PostConditionMode.Allow,
             appDetails: {
                 name: 'Jackpot Wall',
                 icon: window.location.origin + '/favicon.ico',
