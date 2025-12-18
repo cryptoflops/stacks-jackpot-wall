@@ -31,6 +31,7 @@ export default function Jackpot() {
     const [postCount, setPostCount] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<'board' | 'history'>('board');
+    const [showDebug, setShowDebug] = useState(false);
 
     // Multi-Network Configuration
     const IS_MAINNET = process.env.NEXT_PUBLIC_NETWORK === 'mainnet';
@@ -176,6 +177,7 @@ export default function Jackpot() {
         const interval = setInterval(async () => {
             try {
                 const network = CURRENT_NETWORK;
+                console.log('🔄 Interval Sync...', { network: IS_MAINNET ? 'mainnet' : 'testnet' });
                 const potRes = await fetchCallReadOnlyFunction({
                     contractAddress: CONTRACT_ADDRESS,
                     contractName: CONTRACT_NAME,
@@ -186,7 +188,6 @@ export default function Jackpot() {
                 });
                 setPotBalance(Number(cvToJSON(potRes).value));
 
-                // Also update counter and events periodically
                 const idRes = await fetchCallReadOnlyFunction({
                     contractAddress: CONTRACT_ADDRESS,
                     contractName: CONTRACT_NAME,
@@ -199,9 +200,9 @@ export default function Jackpot() {
                 setPostCount(count);
                 await fetchEvents(count);
             } catch (e) {
-                console.error("Interval update failed:", e);
+                console.warn("Interval update failed. This is often due to network congestion or incorrect CONTRACT_ADDRESS.", e);
             }
-        }, 8000);
+        }, 10000); // 10s intervals for production stability
         return () => clearInterval(interval);
     }, []);
 
@@ -323,13 +324,36 @@ export default function Jackpot() {
                                 <p className="text-sm font-medium truncate">{getShortAddress()}</p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => { userSession.signUserOut(); window.location.reload(); }}
-                            className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold text-zinc-500 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5"
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                            Sign Out
-                        </button>
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={() => { userSession.signUserOut(); window.location.reload(); }}
+                                className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-[10px] font-bold text-zinc-500 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5"
+                            >
+                                <LogOut className="w-3.5 h-3.5" />
+                                Sign Out
+                            </button>
+                            <button
+                                onClick={() => setShowDebug(!showDebug)}
+                                className="text-[9px] text-zinc-600 hover:text-zinc-400 font-mono text-center"
+                            >
+                                {showDebug ? '[CLOSE DEBUG]' : '[VERIFY SETTINGS]'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {showDebug && (
+                    <div className="p-3 rounded-lg bg-black/40 border border-[#5546FF]/20 text-[10px] font-mono text-[#5546FF] flex flex-col gap-2 animate-in slide-in-from-bottom-2">
+                        <p className="font-bold border-bottom border-white/10 pb-1">ENVIRONMENT CHECK</p>
+                        <p>NETWORK: <span className="text-zinc-300">{process.env.NEXT_PUBLIC_NETWORK || 'MISSING (Defaults to testnet)'}</span></p>
+                        <p>IS_MAINNET: <span className="text-zinc-300">{String(IS_MAINNET)}</span></p>
+                        <p className="truncate">CONTRACT: <span className="text-zinc-300">{CONTRACT_ADDRESS}</span></p>
+                        <p className="truncate">USER: <span className="text-zinc-300">{getUserAddress() || 'NONE'}</span></p>
+                        <div className="pt-1 border-t border-white/10 flex flex-col gap-1">
+                            <p>POT: {potBalance} μSTX</p>
+                            <p>COUNT: {postCount}</p>
+                            <p>EVENTS: {events.length}</p>
+                        </div>
                     </div>
                 )}
             </aside>
