@@ -39,8 +39,11 @@ export default function Jackpot() {
     const MAINNET_CONTRACT = process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P';
 
     const CURRENT_NETWORK = IS_MAINNET ? STACKS_MAINNET : STACKS_TESTNET;
-    const CONTRACT_ADDRESS = IS_MAINNET ? MAINNET_CONTRACT : TESTNET_CONTRACT;
-    const CONTRACT_NAME = 'jackpot-wall';
+
+    // Parse Address and Name (In case user provides SP...addr.contract-name)
+    const rawContract = IS_MAINNET ? MAINNET_CONTRACT : TESTNET_CONTRACT;
+    const [CONTRACT_ADDRESS, CUSTOM_NAME] = rawContract.split('.');
+    const CONTRACT_NAME = CUSTOM_NAME || 'jackpot-wall';
 
     // Robust Read-Only Helper using fetch (Bypasses SDK import issues)
     const callContractReadOnly = async (functionName: string, args: any[] = []) => {
