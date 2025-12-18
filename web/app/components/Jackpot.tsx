@@ -27,8 +27,10 @@ import { cn } from '@/lib/utils';
 // Types
 interface FeedEvent {
     id: string;
-    type: 'new-post' | 'jackpot-won';
+    txId?: string;
+    type: 'new-post' | 'jackpot-won' | 'user-tx';
     data?: any;
+    status?: 'success' | 'pending' | 'failed';
     timestamp?: number;
 }
 
@@ -110,18 +112,17 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
     const fetchEvents = async (currentCounter: number) => {
         try {
             console.log('📡 Fetching events...', { currentCounter });
-            // Priority 1: Chainhook Events (API)
+            const userAddr = getUserAddress();
+
+            // 1. Fetch "Live" app events from local state
             const res = await fetch('/api/events');
             const json = await res.json();
             let allEvents = json.events || [];
 
-            // Priority 2: Direct Chain Fallback
+            // 2. Direct Chain Fallback for Wall
             if (allEvents.length === 0 && currentCounter > 0) {
-                console.log('⚠️ No API events. Falling back to direct chain fetch...');
                 const fallbackPosts = [];
                 const limit = Math.min(currentCounter, 10);
-
-                // Extraction helper to handle different SDK JSON outputs
                 const extract = (obj: any) => {
                     if (!obj) return '';
                     if (typeof obj === 'string') return obj;
@@ -134,7 +135,6 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                     try {
                         const postRes = await callContractReadOnly('get-post', [uintCV(postId)]);
                         const postData = cvToJSON(postRes).value;
-
                         if (postData) {
                             fallbackPosts.push({
                                 id: `chain-${postId}`,
@@ -144,16 +144,47 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                     poster: extract(postData.poster),
                                     message: extract(postData.message)
                                 },
-                                timestamp: Date.now() - (i * 60000 * 2) // Approximate for display
+                                timestamp: Date.now() - (i * 60000 * 2)
                             });
                         }
-                    } catch (err) {
-                        console.warn(`Failed to fetch post #${postId}:`, err);
-                    }
+                    } catch (err) { }
                 }
                 allEvents = fallbackPosts;
             }
-            console.log('✅ Events loaded:', allEvents.length);
+
+            // 3. User History Injection (from Stacks Node API)
+            if (userAddr && activeTab === 'history') {
+                try {
+                    const apiHost = IS_MAINNET ? 'api.mainnet.hiro.so' : 'api.testnet.hiro.so';
+                    const txRes = await fetch(`https://${apiHost}/extended/v1/address/${userAddr}/transactions?limit=20`);
+                    const txJson = await txRes.json();
+
+                    const userTxs = txJson.results
+                        .filter((tx: any) => tx.tx_type === 'contract_call' && tx.contract_call.contract_id.includes(CONTRACT_NAME))
+                        .map((tx: any) => ({
+                            id: tx.tx_id,
+                            txId: tx.tx_id,
+                            type: 'user-tx',
+                            status: tx.tx_status,
+                            timestamp: tx.burn_block_time * 1000,
+                            data: {
+                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/"/g, '') || 'Interacted with Wall',
+                                poster: tx.sender_address
+                            }
+                        }));
+
+                    // Merge and deduplicate
+                    const seenIds = new Set(allEvents.map((e: any) => e.id));
+                    userTxs.forEach((tx: any) => {
+                        if (!seenIds.has(tx.id)) allEvents.push(tx);
+                    });
+
+                    allEvents.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
+                } catch (txErr) {
+                    console.error('Failed to fetch user TX history:', txErr);
+                }
+            }
+
             setEvents(allEvents);
         } catch (e) {
             console.error('❌ Event fetch failed:', e);
@@ -185,9 +216,23 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                 },
                 onFinish: (data) => {
                     console.log('✅ Transaction broadcasted:', data);
+
+                    // Optimistic update for history
+                    const optimisticEvent: FeedEvent = {
+                        id: data.txId,
+                        txId: data.txId,
+                        type: 'user-tx',
+                        status: 'pending',
+                        timestamp: Date.now(),
+                        data: {
+                            message: message,
+                            poster: myAddress
+                        }
+                    };
+                    setEvents(prev => [optimisticEvent, ...prev]);
+
                     setMessage('');
-                    // Optimistic update
-                    setTimeout(refreshData, 2000);
+                    setTimeout(refreshData, 10000); // Wait for indexing
                 },
                 onCancel: () => {
                     console.log('❌ Transaction cancelled by user');
@@ -219,9 +264,16 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
         return `${address.slice(0, 5)}...${address.slice(-4)}`;
     };
 
+    const getExplorerUrl = (txId?: string) => {
+        if (!txId || txId.startsWith('chain-')) return null;
+        const baseUrl = 'https://explorer.hiro.so';
+        const suffix = IS_MAINNET ? '?chain=mainnet' : '?chain=testnet';
+        return `${baseUrl}/txid/${txId}${suffix}`;
+    };
+
     const myAddress = getUserAddress();
     const filteredEvents = activeTab === 'history'
-        ? events.filter(e => e.data?.poster === myAddress || e.data?.winner === myAddress)
+        ? events.filter(e => e.data?.poster === myAddress || e.data?.winner === myAddress || e.type === 'user-tx')
         : events;
 
     return (
@@ -413,10 +465,22 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                         className="p-4 rounded-xl bg-white/5 border border-white/5"
                                                     >
                                                         <div className="flex justify-between items-start mb-2">
-                                                            <p className="text-[10px] font-black text-[#5546FF] uppercase">Post #{evt.data?.id}</p>
-                                                            <p className="text-[9px] text-zinc-600 font-mono">
-                                                                {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Now'}
-                                                            </p>
+                                                            <p className="text-[10px] font-black text-[#5546FF] uppercase">Post #{evt.data?.id || (evt.type === 'jackpot-won' ? 'WIN' : 'TX')}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-[9px] text-zinc-600 font-mono">
+                                                                    {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Now'}
+                                                                </p>
+                                                                {getExplorerUrl(evt.txId || evt.id) && (
+                                                                    <a
+                                                                        href={getExplorerUrl(evt.txId || evt.id)!}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-zinc-600 hover:text-[#5546FF] transition-colors"
+                                                                    >
+                                                                        <ArrowUpRight className="w-3 h-3" />
+                                                                    </a>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                         <p className="text-sm text-zinc-200 font-medium mb-2">{evt.data?.message}</p>
                                                         <p className="text-[9px] text-zinc-500 font-mono truncate">By {evt.data?.poster}</p>
@@ -445,11 +509,49 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                     <p className="text-zinc-600 text-center py-40 font-bold uppercase tracking-widest">No personal history</p>
                                 ) : (
                                     filteredEvents.map((evt, i) => (
-                                        <div key={evt.id || i} className="p-6 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-2">
-                                            <p className="text-[10px] font-black text-[#fc6432] uppercase">Message sent</p>
-                                            <p className="text-lg text-white font-medium">{evt.data?.message}</p>
-                                            <p className="text-xs text-zinc-500 bg-black/20 p-2 rounded-lg font-mono">Tx ID: {evt.id.slice(0, 20)}...</p>
-                                        </div>
+                                        <a
+                                            key={evt.id || i}
+                                            href={getExplorerUrl(evt.txId || evt.id) || '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="group p-6 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all flex flex-col gap-3 relative overflow-hidden"
+                                        >
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex items-center gap-2">
+                                                    <p className={cn(
+                                                        "text-[10px] font-black uppercase px-2 py-0.5 rounded-md",
+                                                        evt.type === 'jackpot-won' ? "bg-amber-400/20 text-amber-400" : "bg-[#fc6432]/20 text-[#fc6432]"
+                                                    )}>
+                                                        {evt.type === 'jackpot-won' ? 'Jackpot Won' : 'Message Posted'}
+                                                    </p>
+                                                    {evt.status && (
+                                                        <span className={cn(
+                                                            "text-[9px] font-bold uppercase",
+                                                            evt.status === 'success' ? "text-emerald-500" : "text-amber-500 animate-pulse"
+                                                        )}>
+                                                            • {evt.status}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-[10px] text-zinc-500 font-mono">
+                                                    {evt.timestamp ? new Date(evt.timestamp).toLocaleString() : 'Recent'}
+                                                </p>
+                                            </div>
+
+                                            <p className="text-lg text-white font-medium group-hover:text-[#5546FF] transition-colors">{evt.data?.message}</p>
+
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <p className="text-[10px] text-zinc-500 bg-black/40 px-3 py-1.5 rounded-lg font-mono flex-1 truncate">
+                                                    TX: {evt.txId || evt.id}
+                                                </p>
+                                                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-[#5546FF] group-hover:text-white transition-all">
+                                                    <ArrowUpRight className="w-4 h-4" />
+                                                </div>
+                                            </div>
+
+                                            {/* Glow effect on hover */}
+                                            <div className="absolute -inset-1 bg-gradient-to-r from-[#5546FF]/0 via-[#5546FF]/5 to-[#fc6432]/0 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
+                                        </a>
                                     ))
                                 )}
                             </div>
