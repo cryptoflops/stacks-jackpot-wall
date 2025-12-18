@@ -135,16 +135,25 @@ export default function Jackpot() {
                             network: CURRENT_NETWORK,
                             senderAddress: CONTRACT_ADDRESS,
                         });
-                        const postData = cvToJSON(postRes).value;
-                        console.log(`📝 Post #${postId} data:`, postData);
+                        const resJson = cvToJSON(postRes);
+                        const postData = resJson.value;
+                        console.log(`📝 Post #${postId} raw structure:`, JSON.stringify(resJson));
+
                         if (postData) {
+                            // Robust extraction: handles { value: "..." } or direct string
+                            const extract = (obj: any) => {
+                                if (!obj) return '';
+                                if (typeof obj === 'string') return obj;
+                                return obj.value || obj.toString() || '';
+                            };
+
                             fallbackPosts.push({
                                 id: `chain-${postId}`,
                                 type: 'new-post',
                                 data: {
                                     id: postId,
-                                    poster: typeof postData.poster === 'string' ? postData.poster : postData.poster?.value,
-                                    message: typeof postData.message === 'string' ? postData.message : postData.message?.value
+                                    poster: extract(postData.poster),
+                                    message: extract(postData.message)
                                 },
                                 timestamp: Date.now() - (i * 60000)
                             });
