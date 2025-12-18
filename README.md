@@ -60,7 +60,7 @@ This project is pre-configured for Vercel.
 ## ⚙️ Configuration
 ### Contract Deployment
 - **Testnet**: `ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall`
-- **Mainnet**: `SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall`
+- **Mainnet**: `SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall`
 
 
 ## 📜 License
