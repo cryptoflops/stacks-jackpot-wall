@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 240 10% 2%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 4.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 245 100% 64%;
+  /* Stacks #5546FF */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 245 100% 64%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 245 100% 64%;
+  --radius: 1rem;
+}
+
+body {
+  @apply bg-[#020203] text-zinc-100 antialiased;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(245, 100%, 10%, 1) 0, transparent 50%),
+    radial-gradient(at 50% 0%, hsla(245, 100%, 64%, 0.08) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(245, 100%, 15%, 0.1) 0, transparent 50%);
+  min-height: 100vh;
+}
+
+@layer components {
+  .glass {
+    @apply bg-zinc-900/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl p-6 transition-all duration-300;
+  }
+
+  .glow-green {
+    box-shadow: 0 0 20px -5px rgba(34, 197, 94, 0.3);
+  }
+
+  .glow-indigo {
+    box-shadow: 0 0 40px -10px rgba(99, 102, 241, 0.4);
+  }
+}
+
+@keyframes pulse-subtle {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

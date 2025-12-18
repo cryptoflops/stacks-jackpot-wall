@@ -1,0 +1,36 @@
+{
+  "name": "stacks-jackpot-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@hirosystems/chainhooks-client": "^1.0.0",
+    "@stacks/connect": "^7.10.0",
+    "@stacks/connect-react": "^22.6.0",
+    "@stacks/network": "^7.3.0",
+    "@stacks/transactions": "^7.3.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.26",
+    "lucide-react": "^0.561.0",
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
