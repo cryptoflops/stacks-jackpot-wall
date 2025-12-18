@@ -44,7 +44,7 @@ export default function Landing({ onConnect }: LandingProps) {
                     className="group relative flex items-center gap-3 px-10 py-5 bg-white text-black font-black rounded-2xl hover:scale-105 transition-all duration-300"
                 >
                     <Wallet className="w-5 h-5" />
-                    ENTER THE ARENA
+                    CONNECT WALLET
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
 
                     {/* Shadow Glow */}

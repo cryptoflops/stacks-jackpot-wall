@@ -32,7 +32,11 @@ interface FeedEvent {
     timestamp?: number;
 }
 
-export default function Jackpot() {
+interface JackpotProps {
+    onBackToLanding?: () => void;
+}
+
+export default function Jackpot({ onBackToLanding }: JackpotProps) {
     const { doOpenAuth } = useConnect();
     const [message, setMessage] = useState('');
     const [events, setEvents] = useState<FeedEvent[]>([]);
@@ -224,12 +228,15 @@ export default function Jackpot() {
         <div className="w-full max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-8 p-4 lg:p-8">
             {/* Sidebar / Navigation */}
             <aside className="flex flex-col gap-6 lg:h-[calc(100vh-100px)] lg:sticky lg:top-12">
-                <div className="flex items-center gap-4 px-2">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#5546FF] to-[#fc6432] flex items-center justify-center shadow-lg shadow-[#5546FF]/20">
+                <button
+                    onClick={onBackToLanding}
+                    className="flex items-center gap-4 px-2 hover:opacity-80 transition-all text-left group"
+                >
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#5546FF] to-[#fc6432] flex items-center justify-center shadow-lg shadow-[#5546FF]/20 group-hover:scale-105 transition-transform duration-300">
                         <Zap className="w-6 h-6 text-white fill-current" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold tracking-tight text-white">Jackpot Wall</h1>
+                        <h1 className="text-xl font-bold tracking-tight text-white group-hover:text-[#5546FF] transition-colors">Jackpot Wall</h1>
                         <div className="flex items-center gap-1">
                             <Globe className="w-2.5 h-2.5 text-[#5546FF]/60" />
                             <p className="text-[10px] uppercase tracking-widest text-[#5546FF]/60 font-bold">
@@ -237,7 +244,7 @@ export default function Jackpot() {
                             </p>
                         </div>
                     </div>
-                </div>
+                </button>
 
                 <nav className="flex flex-col gap-2">
                     <button

@@ -8,29 +8,38 @@ import { useConnect } from '@stacks/connect-react';
 
 export default function AppController() {
     const [isConnected, setIsConnected] = useState<boolean | null>(null);
+    const [view, setView] = useState<'landing' | 'dashboard'>('landing');
     const { doOpenAuth } = useConnect();
 
     useEffect(() => {
-        setIsConnected(userSession.isUserSignedIn());
+        const signedIn = userSession.isUserSignedIn();
+        setIsConnected(signedIn);
+        if (signedIn) setView('dashboard');
+
         // Handle pending sign-in
         if (userSession.isSignInPending()) {
             userSession.handlePendingSignIn().then(() => {
                 setIsConnected(true);
+                setView('dashboard');
             });
         }
     }, []);
 
     const handleConnect = () => {
-        doOpenAuth();
+        if (isConnected) {
+            setView('dashboard');
+        } else {
+            doOpenAuth();
+        }
     };
 
     if (isConnected === null) return null; // Loading state
 
-    return isConnected ? (
+    return (isConnected && view === 'dashboard') ? (
         <div className="min-h-screen py-8 lg:py-12 relative overflow-hidden">
             {/* Background for Dashboard (Subtle variant) */}
             <div className="fixed inset-0 -z-10 bg-[#020108] opacity-40" />
-            <Jackpot />
+            <Jackpot onBackToLanding={() => setView('landing')} />
         </div>
     ) : (
         <Landing onConnect={handleConnect} />
