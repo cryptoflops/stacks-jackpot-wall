@@ -18,7 +18,7 @@ Instead of polling the Stacks node, this project utilizes **Hiro Chainhooks** to
 - **Predicates**: Custom hooks listen for the `print` events (`new-post` and `jackpot-won`) emitted by the contract.
 - **Latency**: Near-instant data ingestion, bypassing the block confirmation lag for non-critical UI feedback.
 
-### 3. Multi-Network Deployment
+### 3. Testnet and Mainnet Deployment
 The architecture is designed for seamless transitions between environments using standardized Clarinet deployment plans.
 
 ---
@@ -48,7 +48,7 @@ npm test
 clarinet check
 ```
 
-### 2. Multi-Network Ship
+### 2. Ship to Testnet & Mainnet
 ```bash
 # Deploy to Testnet
 ./deploy-testnet.sh
