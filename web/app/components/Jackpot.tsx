@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useConnect } from '@stacks/connect-react';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { openContractCall } from '@stacks/connect';
 import { uintCV, stringUtf8CV, cvToJSON, fetchCallReadOnlyFunction } from '@stacks/transactions';
@@ -203,9 +207,9 @@ export default function Jackpot() {
             },
             onFinish: (data: any) => {
                 setMessage('');
-                setTimeout(() => {
-                    refreshData();
-                    fetchEvents();
+                setTimeout(async () => {
+                    const newCount = await refreshData();
+                    await fetchEvents(newCount);
                 }, 4000); // Wait a bit for chain update
             }
         };
