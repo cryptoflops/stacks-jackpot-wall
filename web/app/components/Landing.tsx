@@ -80,15 +80,6 @@ export default function Landing({ onConnect }: LandingProps) {
                 </div>
             </motion.div>
 
-            {/* Scrolling Indicator */}
-            <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute bottom-32 left-1/2 -translate-x-1/2 text-white/20"
-            >
-                <div className="w-px h-12 bg-gradient-to-b from-white to-transparent mx-auto" />
-            </motion.div>
-
             <div className="mt-auto w-full">
                 <Footer />
             </div>
