@@ -41,14 +41,27 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) to join the wall.
 
+---
+
+## 🌐 Multi-Network Support
+The dashboard supports both Stacks Testnet and Mainnet.
+- **Deploy to Testnet**: `./deploy-testnet.sh`
+- **Deploy to Mainnet**: `./deploy-mainnet.sh`
+- **Toggle Frontend**: Update `NEXT_PUBLIC_NETWORK` in your `.env`.
+
+## ☁️ Deployment (Vercel)
+This project is pre-configured for Vercel.
+1. Connect your GitHub repository to Vercel.
+2. The `vercel.json` will automatically handle the monorepo-style build.
+3. Configure **Environment Variables** in Vercel:
+   - `NEXT_PUBLIC_NETWORK`: `testnet` or `mainnet`
+   - `CHAINHOOK_SECRET`: A secret token for secure event ingestion.
+
 ## ⚙️ Configuration
-
 ### Contract Deployment
-The contract is currently deployed on Stacks Testnet at:
-`ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall`
+- **Testnet**: `ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall`
+- **Mainnet**: `SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall`
 
-### Chainhook Predicate
-Located at `chainhooks/jackpot-wall.json`. This watches for the `post-message` function calls and pushes data to the application backend for real-time feed updates.
 
 ## 📜 License
 MIT
