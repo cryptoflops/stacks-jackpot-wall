@@ -136,14 +136,15 @@ export default function Jackpot() {
                             senderAddress: CONTRACT_ADDRESS,
                         });
                         const postData = cvToJSON(postRes).value;
+                        console.log(`📝 Post #${postId} data:`, postData);
                         if (postData) {
                             fallbackPosts.push({
                                 id: `chain-${postId}`,
                                 type: 'new-post',
                                 data: {
                                     id: postId,
-                                    poster: postData.poster.value,
-                                    message: postData.message.value
+                                    poster: typeof postData.poster === 'string' ? postData.poster : postData.poster?.value,
+                                    message: typeof postData.message === 'string' ? postData.message : postData.message?.value
                                 },
                                 timestamp: Date.now() - (i * 60000)
                             });
