@@ -19,12 +19,12 @@
         "mainnet": {
             "if_this": {
                 "scope": "contract_call",
-                "contract_identifier": "SP1...jackpot-wall",
+                "contract_identifier": "SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall",
                 "method": "post-message"
             },
             "then_that": {
                 "http_post": {
-                    "url": "https://jackpot-wall.vercel.app/api/chainhook",
+                    "url": "https://stacks-jackpot-wall.vercel.app/api/chainhook",
                     "authorization_header": "Bearer secret-token"
                 }
             }
