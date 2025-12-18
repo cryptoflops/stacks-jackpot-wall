@@ -50,9 +50,10 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
     const [isConnected, setIsConnected] = useState<boolean>(false);
 
     // Multi-Network Configuration
-    const IS_MAINNET = process.env.NEXT_PUBLIC_NETWORK === 'mainnet';
-    const TESTNET_CONTRACT = process.env.NEXT_PUBLIC_TESTNET_CONTRACT || 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P';
-    const MAINNET_CONTRACT = process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P';
+    // Multi-Network Configuration (Aligned with mainnet deployment)
+    const IS_MAINNET = process.env.NEXT_PUBLIC_NETWORK === 'mainnet' || process.env.NEXT_PUBLIC_NETWORK === 'Mainnet';
+    const TESTNET_CONTRACT = process.env.NEXT_PUBLIC_TESTNET_CONTRACT || 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall';
+    const MAINNET_CONTRACT = process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall';
 
     const CURRENT_NETWORK = IS_MAINNET ? STACKS_MAINNET : STACKS_TESTNET;
 
@@ -111,52 +112,52 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
     const fetchEvents = async (currentCounter: number) => {
         try {
-            console.log('📡 Fetching events...', { currentCounter });
+            console.log('📡 Syncing Events...', { currentCounter });
             const userAddr = getUserAddress();
+            const apiHost = IS_MAINNET ? 'api.mainnet.hiro.so' : 'api.testnet.hiro.so';
 
-            // 1. Fetch "Live" app events from local state
+            // 1. Fetch Local App Events (Chainhook)
             const res = await fetch('/api/events');
             const json = await res.json();
-            let allEvents = json.events || [];
+            let allEvents: FeedEvent[] = json.events || [];
 
-            // 2. Direct Chain Fallback for Wall
-            if (allEvents.length === 0 && currentCounter > 0) {
-                const fallbackPosts = [];
-                const limit = Math.min(currentCounter, 10);
-                const extract = (obj: any) => {
-                    if (!obj) return '';
-                    if (typeof obj === 'string') return obj;
-                    return obj.value || obj.toString() || '';
-                };
+            // 2. Network Fallback: Fetch Recent Contract TXs for Live Feed Links
+            // This ensures links exist even if Chainhooks are delayed/errored
+            try {
+                const contractId = `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`;
+                const contractTxRes = await fetch(`https://${apiHost}/extended/v1/address/${contractId}/transactions?limit=20`);
+                const contractTxJson = await contractTxRes.json();
 
-                for (let i = 0; i < limit; i++) {
-                    const postId = currentCounter - i;
-                    if (postId <= 0) break;
-                    try {
-                        const postRes = await callContractReadOnly('get-post', [uintCV(postId)]);
-                        const postData = cvToJSON(postRes).value;
-                        if (postData) {
-                            fallbackPosts.push({
-                                id: `chain-${postId}`,
-                                type: 'new-post' as const,
-                                data: {
-                                    id: postId,
-                                    poster: extract(postData.poster),
-                                    message: extract(postData.message)
-                                },
-                                timestamp: Date.now() - (i * 60000 * 2)
-                            });
+                const chainEvents = contractTxJson.results
+                    .filter((tx: any) => tx.tx_status === 'success' && tx.tx_type === 'contract_call')
+                    .map((tx: any) => ({
+                        id: tx.tx_id,
+                        txId: tx.tx_id,
+                        type: tx.contract_call.function_name === 'post-message' ? 'new-post' : 'user-tx',
+                        status: 'success',
+                        timestamp: (tx.burn_block_time || Date.now() / 1000) * 1000,
+                        data: {
+                            message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Posted to Wall',
+                            poster: tx.sender_address,
+                            id: '?' // Post ID relative to transaction, hard to get without secondary index
                         }
-                    } catch (err) { }
-                }
-                allEvents = fallbackPosts;
+                    }));
+
+                // Merge with priority on Chainhook data (which has post IDs)
+                const seenTxIds = new Set(allEvents.map(e => e.txId || e.id));
+                chainEvents.forEach((ce: any) => {
+                    if (!seenTxIds.has(ce.id)) {
+                        allEvents.push(ce);
+                    }
+                });
+            } catch (err) {
+                console.error('Contract TX fallback failed:', err);
             }
 
-            // 3. User History Injection (from Stacks Node API)
+            // 3. Robust User History (Direct API)
             if (userAddr) {
                 try {
-                    const apiHost = IS_MAINNET ? 'api.mainnet.hiro.so' : 'api.testnet.hiro.so';
-                    const txRes = await fetch(`https://${apiHost}/extended/v1/address/${userAddr}/transactions?limit=30`);
+                    const txRes = await fetch(`https://${apiHost}/extended/v1/address/${userAddr}/transactions?limit=40`);
                     const txJson = await txRes.json();
 
                     const userTxs = txJson.results
@@ -168,37 +169,25 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             status: tx.tx_status,
                             timestamp: (tx.burn_block_time || tx.parent_burn_block_time || Date.now() / 1000) * 1000,
                             data: {
-                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Interacted with Wall', // Clean up Clarity string representation
+                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Interacted with Wall',
                                 poster: tx.sender_address
                             }
                         }));
 
-                    // Deep Inject txId into live events if missing
-                    allEvents = allEvents.map((e: any) => {
-                        if (!e.txId && e.id && !e.id.startsWith('chain-')) {
-                            return { ...e, txId: e.id };
-                        }
-                        return e;
-                    });
-
-                    // Merge and deduplicate
-                    const seenIds = new Set(allEvents.map((e: any) => e.txId || e.id));
+                    const finalSeen = new Set(allEvents.map(e => e.txId || e.id));
                     userTxs.forEach((tx: any) => {
-                        if (!seenIds.has(tx.id)) {
-                            allEvents.push(tx);
-                            seenIds.add(tx.id);
-                        }
+                        if (!finalSeen.has(tx.id)) allEvents.push(tx);
                     });
-
-                    allEvents.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
                 } catch (txErr) {
-                    console.error('Failed to fetch user TX history:', txErr);
+                    console.error('User history fetch failed:', txErr);
                 }
             }
 
-            setEvents(allEvents);
+            // Sorting and cleanup
+            allEvents.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            setEvents([...allEvents]);
         } catch (e) {
-            console.error('❌ Event fetch failed:', e);
+            console.error('❌ Event sync failed:', e);
         }
     };
 
