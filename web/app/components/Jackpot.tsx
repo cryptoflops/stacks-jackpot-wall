@@ -32,6 +32,7 @@ interface FeedEvent {
     data?: any;
     status?: 'success' | 'pending' | 'failed';
     timestamp?: number;
+    score?: number;
 }
 
 interface JackpotProps {
@@ -48,6 +49,8 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
     const [activeTab, setActiveTab] = useState<'board' | 'history'>('board');
     const [showDebug, setShowDebug] = useState(false);
     const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [userReputation, setUserReputation] = useState<{ score: number; passport_id: string | null } | null>(null);
+    const [reputationMap, setReputationMap] = useState<{ [address: string]: number }>({});
 
     // Multi-Network Configuration
     // Multi-Network Configuration (Aligned with mainnet deployment)
@@ -100,6 +103,12 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
             // Fetch events after getting the counter
             await fetchEvents(countVal);
+
+            // Sync user reputation
+            if (signedIn) {
+                const userAddr = getUserAddress();
+                if (userAddr) await fetchReputation(userAddr, true);
+            }
 
             return countVal;
         } catch (e) {
@@ -184,10 +193,30 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             }
 
             // Sorting and cleanup
-            allEvents.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            setEvents([...allEvents]);
+            const sortedEvents = allEvents.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            // Fetch missing reputations for sorted events (limit to top 10 for performance)
+            const addressesToFetch = [...new Set(sortedEvents.slice(0, 10).map(e => e.data?.poster).filter(Boolean))];
+            addressesToFetch.forEach(addr => {
+                if (reputationMap[addr] === undefined) fetchReputation(addr);
+            });
+
+            setEvents(sortedEvents);
         } catch (e) {
             console.error('❌ Event sync failed:', e);
+        }
+    };
+
+    const fetchReputation = async (address: string, isCurrentUser: boolean = false) => {
+        try {
+            const res = await fetch(`/api/talent?address=${address}`);
+            const data = await res.json();
+            if (data.score !== undefined) {
+                if (isCurrentUser) setUserReputation({ score: data.score, passport_id: data.passport_id });
+                setReputationMap(prev => ({ ...prev, [address]: data.score }));
+            }
+        } catch (err) {
+            console.error(`Failed to fetch reputation for ${address}:`, err);
         }
     };
 
@@ -326,7 +355,20 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#5546FF] to-[#fc6432]" />
                             <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter">Connected</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter">Connected</p>
+                                    {userReputation && userReputation.score > 0 && (
+                                        <a
+                                            href={`https://www.talentprotocol.com/passport/${userReputation.passport_id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-1 bg-[#5546FF]/20 text-[#5546FF] px-1.5 py-0.5 rounded-md text-[8px] font-black border border-[#5546FF]/30 hover:bg-[#5546FF]/30 transition-all"
+                                        >
+                                            <Zap className="w-2 h-2 fill-current" />
+                                            SCORE: {userReputation.score}
+                                        </a>
+                                    )}
+                                </div>
                                 <p className="text-sm font-bold truncate text-white">{getShortAddress()}</p>
                             </div>
                         </div>
@@ -465,7 +507,15 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                         className="p-4 rounded-xl bg-white/5 border border-white/5"
                                                     >
                                                         <div className="flex justify-between items-start mb-2">
-                                                            <p className="text-[10px] font-black text-[#5546FF] uppercase">Post #{evt.data?.id || (evt.type === 'jackpot-won' ? 'WIN' : 'TX')}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-[10px] font-black text-[#5546FF] uppercase">Post #{evt.data?.id || (evt.type === 'jackpot-won' ? 'WIN' : 'TX')}</p>
+                                                                {reputationMap[evt.data?.poster] > 0 && (
+                                                                    <div className="flex items-center gap-1 bg-[#fc6432]/20 text-[#fc6432] px-1.5 py-0.5 rounded-md text-[8px] font-black border border-[#fc6432]/30">
+                                                                        <Trophy className="w-2 h-2" />
+                                                                        {reputationMap[evt.data?.poster]}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                             <div className="flex items-center gap-2">
                                                                 <p className="text-[9px] text-zinc-600 font-mono">
                                                                     {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Now'}
@@ -524,6 +574,12 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                     )}>
                                                         {evt.type === 'jackpot-won' ? 'Jackpot Won' : 'Message Posted'}
                                                     </p>
+                                                    {reputationMap[evt.data?.poster] > 0 && (
+                                                        <div className="flex items-center gap-1 bg-[#5546FF]/20 text-[#5546FF] px-2 py-0.5 rounded-md text-[9px] font-black border border-[#5546FF]/30">
+                                                            <Zap className="w-2.5 h-2.5 fill-current" />
+                                                            BUILDER SCORE: {reputationMap[evt.data?.poster]}
+                                                        </div>
+                                                    )}
                                                     {evt.status && (
                                                         <span className={cn(
                                                             "text-[9px] font-bold uppercase",
