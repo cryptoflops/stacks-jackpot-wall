@@ -61,6 +61,7 @@ export default function Jackpot() {
 
     const refreshData = async () => {
         setIsLoading(true);
+        console.log('🔄 Syncing on-chain data...', { network: IS_MAINNET ? 'mainnet' : 'testnet', contract: CONTRACT_ADDRESS });
         try {
             const network = CURRENT_NETWORK;
 
@@ -74,6 +75,7 @@ export default function Jackpot() {
                 senderAddress: CONTRACT_ADDRESS,
             });
             const potVal = Number(cvToJSON(potRes).value);
+            console.log('💰 Pot Balance:', potVal);
             setPotBalance(potVal);
 
             // 2. Fetch Counter
@@ -86,12 +88,17 @@ export default function Jackpot() {
                 senderAddress: CONTRACT_ADDRESS,
             });
             const countVal = Number(cvToJSON(idRes).value);
+            console.log('📊 Post Count:', countVal);
             setPostCount(countVal);
 
-            setIsConnected(userSession.isUserSignedIn());
+            const signedIn = userSession.isUserSignedIn();
+            setIsConnected(signedIn);
+            if (signedIn) {
+                console.log('👤 User connected:', getUserAddress());
+            }
             return countVal;
         } catch (e) {
-            console.error('Data sync failed:', e);
+            console.error('❌ Data sync failed. Double-check your CONTRACT_ADDRESS and NETWORK settings:', e);
             return 0;
         } finally {
             setIsLoading(false);
@@ -100,45 +107,52 @@ export default function Jackpot() {
 
     const fetchEvents = async (currentCounter: number) => {
         try {
+            console.log('📡 Fetching events...', { currentCounter });
             // Priority 1: Chainhook Events (API)
             const res = await fetch('/api/events');
             const json = await res.json();
             let allEvents = json.events || [];
 
-            // Priority 2: Direct Chain Fallback (If no API events, fetch last 10 posts)
+            // Priority 2: Direct Chain Fallback (Always fetch if API is empty or for redundancy)
             if (allEvents.length === 0 && currentCounter > 0) {
+                console.log('⚠️ No API events. Falling back to direct chain fetch...');
                 const fallbackPosts = [];
-                // Fetch last 5 posts for the feed
-                const limit = Math.min(currentCounter, 5);
+                const limit = Math.min(currentCounter, 10); // Fetch more for fallback
                 for (let i = 0; i < limit; i++) {
                     const postId = currentCounter - i;
-                    const postRes = await fetchCallReadOnlyFunction({
-                        contractAddress: CONTRACT_ADDRESS,
-                        contractName: CONTRACT_NAME,
-                        functionName: 'get-post',
-                        functionArgs: [uintCV(postId)],
-                        network: CURRENT_NETWORK,
-                        senderAddress: CONTRACT_ADDRESS,
-                    });
-                    const postData = cvToJSON(postRes).value;
-                    if (postData) {
-                        fallbackPosts.push({
-                            id: `chain-${postId}`,
-                            type: 'new-post',
-                            data: {
-                                id: postId,
-                                poster: postData.poster.value,
-                                message: postData.message.value // Fix: Access .value for message
-                            },
-                            timestamp: Date.now() - (i * 60000) // Simulated time
+                    if (postId <= 0) break;
+                    try {
+                        const postRes = await fetchCallReadOnlyFunction({
+                            contractAddress: CONTRACT_ADDRESS,
+                            contractName: CONTRACT_NAME,
+                            functionName: 'get-post',
+                            functionArgs: [uintCV(postId)],
+                            network: CURRENT_NETWORK,
+                            senderAddress: CONTRACT_ADDRESS,
                         });
+                        const postData = cvToJSON(postRes).value;
+                        if (postData) {
+                            fallbackPosts.push({
+                                id: `chain-${postId}`,
+                                type: 'new-post',
+                                data: {
+                                    id: postId,
+                                    poster: postData.poster.value,
+                                    message: postData.message.value
+                                },
+                                timestamp: Date.now() - (i * 60000)
+                            });
+                        }
+                    } catch (err) {
+                        console.warn(`Failed to fetch post #${postId}:`, err);
                     }
                 }
                 allEvents = fallbackPosts;
             }
+            console.log('✅ Events loaded:', allEvents.length);
             setEvents(allEvents);
         } catch (e) {
-            console.error('Event fetch failed:', e);
+            console.error('❌ Event fetch failed:', e);
         }
     };
 
@@ -225,8 +239,16 @@ export default function Jackpot() {
 
     const getUserAddress = () => {
         if (!isConnected) return '';
-        const userData = userSession.loadUserData();
-        return IS_MAINNET ? userData.profile.stxAddress.mainnet : userData.profile.stxAddress.testnet || '';
+        try {
+            const userData = userSession.loadUserData();
+            // Try different address storage patterns in Stacks SDK
+            const address = IS_MAINNET
+                ? (userData.profile?.stxAddress?.mainnet || userData.profile?.stxAddress)
+                : (userData.profile?.stxAddress?.testnet || userData.profile?.stxAddress);
+            return address || '';
+        } catch (e) {
+            return '';
+        }
     };
 
     const getShortAddress = () => {
