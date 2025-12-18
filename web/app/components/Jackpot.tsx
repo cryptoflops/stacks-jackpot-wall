@@ -153,10 +153,10 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             }
 
             // 3. User History Injection (from Stacks Node API)
-            if (userAddr && activeTab === 'history') {
+            if (userAddr) {
                 try {
                     const apiHost = IS_MAINNET ? 'api.mainnet.hiro.so' : 'api.testnet.hiro.so';
-                    const txRes = await fetch(`https://${apiHost}/extended/v1/address/${userAddr}/transactions?limit=20`);
+                    const txRes = await fetch(`https://${apiHost}/extended/v1/address/${userAddr}/transactions?limit=30`);
                     const txJson = await txRes.json();
 
                     const userTxs = txJson.results
@@ -166,17 +166,28 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             txId: tx.tx_id,
                             type: 'user-tx',
                             status: tx.tx_status,
-                            timestamp: tx.burn_block_time * 1000,
+                            timestamp: (tx.burn_block_time || tx.parent_burn_block_time || Date.now() / 1000) * 1000,
                             data: {
-                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/"/g, '') || 'Interacted with Wall',
+                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Interacted with Wall', // Clean up Clarity string representation
                                 poster: tx.sender_address
                             }
                         }));
 
+                    // Deep Inject txId into live events if missing
+                    allEvents = allEvents.map((e: any) => {
+                        if (!e.txId && e.id && !e.id.startsWith('chain-')) {
+                            return { ...e, txId: e.id };
+                        }
+                        return e;
+                    });
+
                     // Merge and deduplicate
-                    const seenIds = new Set(allEvents.map((e: any) => e.id));
+                    const seenIds = new Set(allEvents.map((e: any) => e.txId || e.id));
                     userTxs.forEach((tx: any) => {
-                        if (!seenIds.has(tx.id)) allEvents.push(tx);
+                        if (!seenIds.has(tx.id)) {
+                            allEvents.push(tx);
+                            seenIds.add(tx.id);
+                        }
                     });
 
                     allEvents.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
