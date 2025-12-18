@@ -413,13 +413,13 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                         >
                             {/* Jackpot Card */}
                             <section className="relative overflow-hidden glass-card p-6 lg:p-12 flex flex-col items-center justify-center text-center gap-6 lg:gap-8 group !bg-white/5 border border-white/10">
-                                <div className="absolute inset-0 bg-gradient-to-br from-[#5546FF]/10 via-transparent to-[#fc6432]/5 pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-[#5546FF]/20 via-transparent to-[#fc6432]/10 pointer-events-none" />
 
                                 <button
                                     onClick={refreshData}
-                                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 transition-all text-zinc-500 hover:text-white"
+                                    className="absolute top-6 right-6 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-zinc-500 hover:text-white z-20 group/refresh"
                                 >
-                                    <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin text-[#5546FF]")} />
+                                    <RefreshCw className={cn("w-4 h-4 transition-transform group-hover/refresh:rotate-180 duration-500", isLoading && "animate-spin text-[#5546FF]")} />
                                 </button>
 
                                 <div className="relative">
@@ -469,18 +469,28 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                         onChange={(e) => setMessage(e.target.value)}
                                         disabled={isLoading}
                                         placeholder="Speak your truth to the chain..."
-                                        className="w-full h-44 bg-black/40 border border-white/10 rounded-2xl p-6 text-zinc-100 placeholder:text-zinc-700 outline-none focus:ring-2 focus:ring-[#5546FF] transition-all resize-none text-lg"
+                                        className="w-full h-44 bg-black/40 border border-white/10 rounded-2xl p-6 text-zinc-100 placeholder:text-zinc-700 outline-none focus:ring-2 focus:ring-[#5546FF]/50 focus:border-[#5546FF]/50 transition-all resize-none text-lg shadow-inner"
                                     />
 
                                     <button
                                         onClick={handlePost}
                                         disabled={isLoading || !message}
                                         className={cn(
-                                            "w-full py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-2xl active:scale-[0.98]",
-                                            message ? "bg-[#5546FF] text-white hover:bg-[#4436EE]" : "bg-zinc-900 text-zinc-600"
+                                            "w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all shadow-2xl active:scale-[0.98] overflow-hidden relative",
+                                            message ? "bg-[#5546FF] text-white hover:bg-[#4436EE] hover:shadow-[#5546FF]/20" : "bg-zinc-900 text-zinc-600 border border-white/5"
                                         )}
                                     >
-                                        {isLoading ? 'Processing...' : 'Post Message'}
+                                        <div className="relative z-10 flex items-center justify-center gap-3">
+                                            {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                                            {isLoading ? 'Processing...' : 'Broadcast Message'}
+                                        </div>
+                                        {message && (
+                                            <motion.div
+                                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                                                animate={{ x: ['-200%', '200%'] }}
+                                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                            />
+                                        )}
                                     </button>
                                 </div>
 
@@ -502,38 +512,42 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                 events.map((evt, i) => (
                                                     <motion.div
                                                         key={evt.id || i}
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="p-4 rounded-xl bg-white/5 border border-white/5"
+                                                        initial={{ opacity: 0, x: -10 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        whileHover={{ scale: 1.02 }}
+                                                        className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group/card"
                                                     >
-                                                        <div className="flex justify-between items-start mb-2">
+                                                        <div className="flex justify-between items-start mb-3">
                                                             <div className="flex items-center gap-2">
-                                                                <p className="text-[10px] font-black text-[#5546FF] uppercase">Post #{evt.data?.id || (evt.type === 'jackpot-won' ? 'WIN' : 'TX')}</p>
+                                                                <p className="text-[10px] font-black text-[#5546FF] uppercase tracking-widest">Post #{evt.data?.id || (evt.type === 'jackpot-won' ? 'WIN' : 'TX')}</p>
                                                                 {reputationMap[evt.data?.poster] > 0 && (
-                                                                    <div className="flex items-center gap-1 bg-[#fc6432]/20 text-[#fc6432] px-1.5 py-0.5 rounded-md text-[8px] font-black border border-[#fc6432]/30">
-                                                                        <Trophy className="w-2 h-2" />
+                                                                    <div className="flex items-center gap-1 bg-[#fc6432]/10 text-[#fc6432] px-2 py-0.5 rounded-full text-[8px] font-black border border-[#fc6432]/20">
+                                                                        <Trophy className="w-2.5 h-2.5" />
                                                                         {reputationMap[evt.data?.poster]}
                                                                     </div>
                                                                 )}
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <p className="text-[9px] text-zinc-600 font-mono">
-                                                                    {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Now'}
+                                                                <p className="text-[9px] text-zinc-600 font-mono font-bold">
+                                                                    {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now'}
                                                                 </p>
                                                                 {getExplorerUrl(evt.txId || evt.id) && (
                                                                     <a
                                                                         href={getExplorerUrl(evt.txId || evt.id)!}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="text-zinc-600 hover:text-[#5546FF] transition-colors"
+                                                                        className="p-1 rounded-md bg-white/5 text-zinc-500 hover:text-[#5546FF] hover:bg-[#5546FF]/10 transition-all"
                                                                     >
-                                                                        <ArrowUpRight className="w-3 h-3" />
+                                                                        <ArrowUpRight className="w-3.5 h-3.5" />
                                                                     </a>
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <p className="text-sm text-zinc-200 font-medium mb-2">{evt.data?.message}</p>
-                                                        <p className="text-[9px] text-zinc-500 font-mono truncate">By {evt.data?.poster}</p>
+                                                        <p className="text-sm text-zinc-200 font-semibold mb-3 leading-relaxed tracking-tight">{evt.data?.message}</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+                                                            <p className="text-[9px] text-zinc-500 font-mono truncate font-bold">BY {evt.data?.poster}</p>
+                                                        </div>
                                                     </motion.div>
                                                 ))
                                             )}
