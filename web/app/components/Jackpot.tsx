@@ -18,20 +18,30 @@ import {
     ChevronRight,
     TrendingUp,
     CircleDot,
-    Globe
+    Globe,
+    CreditCard,
+    ArrowUpRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Types
+interface FeedEvent {
+    id: string;
+    type: 'new-post' | 'jackpot-won';
+    data?: any;
+    timestamp?: number;
+}
 
 export default function Jackpot() {
     const { doOpenAuth } = useConnect();
     const [message, setMessage] = useState('');
-    const [events, setEvents] = useState<any[]>([]);
-    const [isConnected, setIsConnected] = useState(false);
+    const [events, setEvents] = useState<FeedEvent[]>([]);
     const [potBalance, setPotBalance] = useState<number>(0);
     const [postCount, setPostCount] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<'board' | 'history'>('board');
     const [showDebug, setShowDebug] = useState(false);
+    const [isConnected, setIsConnected] = useState<boolean>(false);
 
     // Multi-Network Configuration
     const IS_MAINNET = process.env.NEXT_PUBLIC_NETWORK === 'mainnet';
@@ -56,7 +66,6 @@ export default function Jackpot() {
                 network: CURRENT_NETWORK,
                 senderAddress: CONTRACT_ADDRESS,
             });
-            // Try to handle potential SDK import issues by double checking if callReadOnlyFunction exists
             return res;
         } catch (e) {
             console.error(`Read-only call to ${functionName} failed:`, e);
@@ -68,42 +77,26 @@ export default function Jackpot() {
         setIsLoading(true);
         console.log('🔄 Syncing on-chain data...', { network: IS_MAINNET ? 'mainnet' : 'testnet', contract: CONTRACT_ADDRESS });
         try {
-            const network = CURRENT_NETWORK;
-
-            // 1. Fetch Pot Balance
-            const potRes = await fetchCallReadOnlyFunction({
-                contractAddress: CONTRACT_ADDRESS,
-                contractName: CONTRACT_NAME,
-                functionName: 'get-pot-balance',
-                functionArgs: [],
-                network,
-                senderAddress: CONTRACT_ADDRESS,
-            });
-            const potVal = Number(cvToJSON(potRes).value);
-            console.log('💰 Pot Balance:', potVal);
-            setPotBalance(potVal);
-
-            // 2. Fetch Counter
-            const idRes = await fetchCallReadOnlyFunction({
-                contractAddress: CONTRACT_ADDRESS,
-                contractName: CONTRACT_NAME,
-                functionName: 'get-counter',
-                functionArgs: [],
-                network,
-                senderAddress: CONTRACT_ADDRESS,
-            });
-            const countVal = Number(cvToJSON(idRes).value);
-            console.log('📊 Post Count:', countVal);
-            setPostCount(countVal);
-
             const signedIn = userSession.isUserSignedIn();
             setIsConnected(signedIn);
-            if (signedIn) {
-                console.log('👤 User connected:', getUserAddress());
-            }
+
+            const [potRes, countRes] = await Promise.all([
+                callContractReadOnly('get-pot-balance'),
+                callContractReadOnly('get-counter')
+            ]);
+
+            const potVal = Number(cvToJSON(potRes).value);
+            const countVal = Number(cvToJSON(countRes).value);
+
+            setPotBalance(potVal);
+            setPostCount(countVal);
+
+            // Fetch events after getting the counter
+            await fetchEvents(countVal);
+
             return countVal;
         } catch (e) {
-            console.error('❌ Data sync failed. Double-check your CONTRACT_ADDRESS and NETWORK settings:', e);
+            console.error('❌ Data sync failed:', e);
             return 0;
         } finally {
             setIsLoading(false);
@@ -118,44 +111,36 @@ export default function Jackpot() {
             const json = await res.json();
             let allEvents = json.events || [];
 
-            // Priority 2: Direct Chain Fallback (Always fetch if API is empty or for redundancy)
+            // Priority 2: Direct Chain Fallback
             if (allEvents.length === 0 && currentCounter > 0) {
                 console.log('⚠️ No API events. Falling back to direct chain fetch...');
                 const fallbackPosts = [];
-                const limit = Math.min(currentCounter, 10); // Fetch more for fallback
+                const limit = Math.min(currentCounter, 10);
+
+                // Extraction helper to handle different SDK JSON outputs
+                const extract = (obj: any) => {
+                    if (!obj) return '';
+                    if (typeof obj === 'string') return obj;
+                    return obj.value || obj.toString() || '';
+                };
+
                 for (let i = 0; i < limit; i++) {
                     const postId = currentCounter - i;
                     if (postId <= 0) break;
                     try {
-                        const postRes = await fetchCallReadOnlyFunction({
-                            contractAddress: CONTRACT_ADDRESS,
-                            contractName: CONTRACT_NAME,
-                            functionName: 'get-post',
-                            functionArgs: [uintCV(postId)],
-                            network: CURRENT_NETWORK,
-                            senderAddress: CONTRACT_ADDRESS,
-                        });
-                        const resJson = cvToJSON(postRes);
-                        const postData = resJson.value;
-                        console.log(`📝 Post #${postId} raw structure:`, JSON.stringify(resJson));
+                        const postRes = await callContractReadOnly('get-post', [uintCV(postId)]);
+                        const postData = cvToJSON(postRes).value;
 
                         if (postData) {
-                            // Robust extraction: handles { value: "..." } or direct string
-                            const extract = (obj: any) => {
-                                if (!obj) return '';
-                                if (typeof obj === 'string') return obj;
-                                return obj.value || obj.toString() || '';
-                            };
-
                             fallbackPosts.push({
                                 id: `chain-${postId}`,
-                                type: 'new-post',
+                                type: 'new-post' as const,
                                 data: {
                                     id: postId,
                                     poster: extract(postData.poster),
                                     message: extract(postData.message)
                                 },
-                                timestamp: Date.now() - (i * 60000)
+                                timestamp: Date.now() - (i * 60000 * 2) // Approximate for display
                             });
                         }
                     } catch (err) {
@@ -172,95 +157,41 @@ export default function Jackpot() {
     };
 
     useEffect(() => {
-        const init = async () => {
-            if (typeof window === 'undefined') return;
-            try {
-                if (userSession.isSignInPending()) {
-                    await userSession.handlePendingSignIn();
-                    setIsConnected(true);
-                    window.history.replaceState({}, document.title, "/");
-                } else {
-                    setIsConnected(userSession.isUserSignedIn());
-                }
-                const currentCount = await refreshData();
-                await fetchEvents(currentCount); // Pass currentCount
-            } catch (e) { console.error(e); }
-        };
-        init();
-
-        const interval = setInterval(async () => {
-            try {
-                const network = CURRENT_NETWORK;
-                console.log('🔄 Interval Sync...', { network: IS_MAINNET ? 'mainnet' : 'testnet' });
-                const potRes = await fetchCallReadOnlyFunction({
-                    contractAddress: CONTRACT_ADDRESS,
-                    contractName: CONTRACT_NAME,
-                    functionName: 'get-pot-balance',
-                    functionArgs: [],
-                    network,
-                    senderAddress: CONTRACT_ADDRESS,
-                });
-                setPotBalance(Number(cvToJSON(potRes).value));
-
-                const idRes = await fetchCallReadOnlyFunction({
-                    contractAddress: CONTRACT_ADDRESS,
-                    contractName: CONTRACT_NAME,
-                    functionName: 'get-counter',
-                    functionArgs: [],
-                    network,
-                    senderAddress: CONTRACT_ADDRESS,
-                });
-                const count = Number(cvToJSON(idRes).value);
-                setPostCount(count);
-                await fetchEvents(count);
-            } catch (e) {
-                console.warn("Interval update failed. This is often due to network congestion or incorrect CONTRACT_ADDRESS.", e);
-            }
-        }, 10000); // 10s intervals for production stability
+        refreshData();
+        const interval = setInterval(refreshData, 30000); // Sync every 30s
         return () => clearInterval(interval);
     }, []);
 
     const handlePost = async () => {
         if (!message) return;
         setIsLoading(true);
-
-        const options = {
-            contractAddress: CONTRACT_ADDRESS,
-            contractName: CONTRACT_NAME,
-            functionName: 'post-message',
-            functionArgs: [stringUtf8CV(message)],
-            network: CURRENT_NETWORK,
-            postConditionMode: PostConditionMode.Allow,
-            appDetails: {
-                name: 'Jackpot Wall',
-                icon: window.location.origin + '/favicon.ico',
-            },
-            onFinish: (data: any) => {
-                console.log('✅ Transaction broadcasted:', data);
-                setMessage('');
-                setTimeout(async () => {
-                    const newCount = await refreshData();
-                    await fetchEvents(newCount);
-                }, 4000);
-            },
-            onCancel: () => {
-                console.log('❌ Transaction cancelled by user');
-                setIsLoading(false);
-            }
-        };
-
-        console.log('🚀 Triggering transaction with options:', {
-            ...options,
-            network: IS_MAINNET ? 'mainnet' : 'testnet',
-            args: options.functionArgs.map(a => cvToJSON(a))
-        });
+        console.log('🚀 Triggering transaction...', { contractAddress: CONTRACT_ADDRESS, message });
 
         try {
-            await openContractCall(options);
+            await openContractCall({
+                contractAddress: CONTRACT_ADDRESS,
+                contractName: CONTRACT_NAME,
+                functionName: 'post-message',
+                functionArgs: [stringUtf8CV(message)],
+                network: CURRENT_NETWORK,
+                postConditionMode: PostConditionMode.Allow,
+                appDetails: {
+                    name: 'Jackpot Wall',
+                    icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
+                },
+                onFinish: (data) => {
+                    console.log('✅ Transaction broadcasted:', data);
+                    setMessage('');
+                    // Optimistic update
+                    setTimeout(refreshData, 2000);
+                },
+                onCancel: () => {
+                    console.log('❌ Transaction cancelled by user');
+                    setIsLoading(false);
+                }
+            });
         } catch (e) {
             console.error('❌ Failed to create transaction:', e);
-            alert('Error creating transaction. Check your browser console for details.');
-        } finally {
             setIsLoading(false);
         }
     };
@@ -269,7 +200,6 @@ export default function Jackpot() {
         if (!isConnected) return '';
         try {
             const userData = userSession.loadUserData();
-            // Try different address storage patterns in Stacks SDK
             const address = IS_MAINNET
                 ? (userData.profile?.stxAddress?.mainnet || userData.profile?.stxAddress)
                 : (userData.profile?.stxAddress?.testnet || userData.profile?.stxAddress);
@@ -285,22 +215,21 @@ export default function Jackpot() {
         return `${address.slice(0, 5)}...${address.slice(-4)}`;
     };
 
-    // Filter events for "My History"
     const myAddress = getUserAddress();
     const filteredEvents = activeTab === 'history'
         ? events.filter(e => e.data?.poster === myAddress || e.data?.winner === myAddress)
         : events;
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-8 p-4 lg:p-8 animate-in fade-in duration-1000">
-            {/* Sidebar */}
-            <aside className="flex flex-col gap-6">
-                <div className="flex items-center gap-3 px-2">
-                    <div className="w-10 h-10 rounded-xl bg-[#5546FF] flex items-center justify-center shadow-lg shadow-[#5546FF]/20">
+        <div className="w-full max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-8 p-4 lg:p-8">
+            {/* Sidebar / Navigation */}
+            <aside className="flex flex-col gap-6 lg:h-[calc(100vh-100px)] lg:sticky lg:top-12">
+                <div className="flex items-center gap-4 px-2">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#5546FF] to-[#fc6432] flex items-center justify-center shadow-lg shadow-[#5546FF]/20">
                         <Zap className="w-6 h-6 text-white fill-current" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold tracking-tight">Jackpot Wall</h1>
+                        <h1 className="text-xl font-bold tracking-tight text-white">Jackpot Wall</h1>
                         <div className="flex items-center gap-1">
                             <Globe className="w-2.5 h-2.5 text-[#5546FF]/60" />
                             <p className="text-[10px] uppercase tracking-widest text-[#5546FF]/60 font-bold">
@@ -314,252 +243,213 @@ export default function Jackpot() {
                     <button
                         onClick={() => setActiveTab('board')}
                         className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium",
-                            activeTab === 'board' ? "bg-white/5 text-zinc-100 border border-white/5 shadow-sm" : "text-zinc-400 hover:text-zinc-100"
+                            "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold tracking-tight",
+                            activeTab === 'board' ? "bg-white/10 text-white border border-white/10 shadow-xl" : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
                         )}
                     >
                         <TrendingUp className={cn("w-5 h-5", activeTab === 'board' ? "text-[#5546FF]" : "text-zinc-500")} />
-                        Live Board
+                        The Wall
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
                         className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium outline-none",
-                            activeTab === 'history' ? "bg-white/5 text-zinc-100 border border-white/5 shadow-sm" : "text-zinc-400 hover:text-zinc-100"
+                            "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold tracking-tight",
+                            activeTab === 'history' ? "bg-white/10 text-white border border-white/10 shadow-xl" : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
                         )}
                     >
                         <History className={cn("w-5 h-5", activeTab === 'history' ? "text-[#5546FF]" : "text-zinc-500")} />
-                        My History
+                        My Ledger
                     </button>
-                    {!isConnected && (
-                        <button
-                            onClick={() => doOpenAuth()}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:bg-white/5 hover:text-zinc-100 transition-all font-medium"
-                        >
-                            <Wallet className="w-5 h-5" />
-                            Connect Wallet
-                        </button>
-                    )}
                 </nav>
 
-                {isConnected && (
-                    <div className="mt-auto glass-card p-4 flex flex-col gap-4">
+                <div className="mt-auto flex flex-col gap-4">
+                    <div className="glass-card p-4 flex flex-col gap-4 !bg-white/5 border border-white/5">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#5546FF] to-[#fc6432]" />
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-tighter">Connected</p>
-                                <p className="text-sm font-medium truncate">{getShortAddress()}</p>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter">Connected</p>
+                                <p className="text-sm font-bold truncate text-white">{getShortAddress()}</p>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <button
-                                onClick={() => { userSession.signUserOut(); window.location.reload(); }}
-                                className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-[10px] font-bold text-zinc-500 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5"
-                            >
-                                <LogOut className="w-3.5 h-3.5" />
-                                Sign Out
-                            </button>
-                            <button
-                                onClick={() => setShowDebug(!showDebug)}
-                                className="text-[9px] text-zinc-600 hover:text-zinc-400 font-mono text-center"
-                            >
-                                {showDebug ? '[CLOSE DEBUG]' : '[VERIFY SETTINGS]'}
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => { userSession.signUserOut(); window.location.reload(); }}
+                            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[10px] font-black text-zinc-400 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5 uppercase tracking-widest"
+                        >
+                            <LogOut className="w-3.5 h-3.5" />
+                            Disconnect
+                        </button>
                     </div>
-                )}
 
-                {showDebug && (
-                    <div className="p-3 rounded-lg bg-black/40 border border-[#5546FF]/20 text-[10px] font-mono text-[#5546FF] flex flex-col gap-2 animate-in slide-in-from-bottom-2">
-                        <p className="font-bold border-bottom border-white/10 pb-1">ENVIRONMENT CHECK</p>
-                        <p>NETWORK: <span className="text-zinc-300">{process.env.NEXT_PUBLIC_NETWORK || 'MISSING (Defaults to testnet)'}</span></p>
-                        <p>IS_MAINNET: <span className="text-zinc-300">{String(IS_MAINNET)}</span></p>
-                        <p className="truncate">CONTRACT: <span className={cn("text-zinc-300", CONTRACT_ADDRESS.includes('AMP23P') && "text-red-500 font-black")}>
-                            {CONTRACT_ADDRESS} {CONTRACT_ADDRESS.includes('AMP23P') ? '(🚨 PLACEHOLDER)' : '(✅ LOADED)'}
-                        </span></p>
-                        {CONTRACT_ADDRESS.includes('AMP23P') && (
-                            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded text-red-400">
-                                <p className="font-bold underline mb-1">ACTION REQUIRED:</p>
-                                <p>You haven't set your actual Contract Address in Vercel!</p>
-                                <p className="mt-1 opacity-80">Add: NEXT_PUBLIC_TESTNET_CONTRACT</p>
-                            </div>
-                        )}
-                        <p className="truncate">USER: <span className="text-zinc-300">{getUserAddress() || 'NONE'}</span></p>
-                        <div className="pt-1 border-t border-white/10 flex flex-col gap-1">
-                            <p>FEE: 0.1 STX (100,000 μSTX)</p>
-                            <p>POT: {potBalance} μSTX</p>
-                            <p>COUNT: {postCount}</p>
-                            <p>EVENTS: {events.length}</p>
-                        </div>
-                    </div>
-                )}
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex flex-col gap-8">
-                {/* Hero Pot Display */}
-                <section className="relative overflow-hidden glass-card p-10 flex flex-col items-center justify-center text-center gap-6 group">
                     <button
-                        onClick={refreshData}
-                        className="absolute top-0 right-0 p-4 hover:rotate-180 transition-all duration-500"
+                        onClick={() => setShowDebug(!showDebug)}
+                        className="text-[10px] text-zinc-600 hover:text-zinc-400 font-bold text-center uppercase tracking-widest"
                     >
-                        <RefreshCw className={cn("w-4 h-4 text-zinc-600", isLoading && "animate-spin text-[#5546FF]")} />
+                        {showDebug ? 'Hide Inspector' : 'System Inspector'}
                     </button>
 
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-[#5546FF]/20 blur-3xl rounded-full animate-pulse" />
-                        <Trophy className="w-16 h-16 text-amber-400 relative z-10 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" />
-                    </div>
-
-                    <div className="flex flex-col gap-1 z-10">
-                        <p className="text-xs font-black uppercase tracking-[0.3em] text-[#5546FF]/80 animate-pulse-subtle">Total Jackpot Pot</p>
-                        <h2 className="text-7xl font-black tracking-tighter text-white">
-                            {(potBalance / 1000000).toFixed(2)} <span className="text-2xl text-zinc-500 font-bold ml-1">STX</span>
-                        </h2>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-3 w-full max-w-xs z-10">
-                        <div className="flex justify-between w-full text-[10px] font-black uppercase text-zinc-500">
-                            <span>Progress</span>
-                            <span>{postCount % 10}/10 Posts</span>
+                    {showDebug && (
+                        <div className="p-4 rounded-2xl bg-black/60 border border-white/10 text-[10px] font-mono text-zinc-400 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4">
+                            <p className="font-black text-[#5546FF] mb-2 uppercase border-b border-white/5 pb-2">Diagnostic Data</p>
+                            <p>NETWORK: {process.env.NEXT_PUBLIC_NETWORK || 'testnet'}</p>
+                            <p className="break-all">CONTRACT: {CONTRACT_ADDRESS}</p>
+                            <p className="text-white mt-2">POT: {(potBalance / 1000000).toFixed(2)} STX</p>
+                            <p className="text-white">COUNT: {postCount}</p>
                         </div>
-                        <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-white/5 shadow-inner">
-                            <motion.div
-                                className="h-full bg-gradient-to-r from-[#5546FF] to-[#fc6432] shadow-[0_0_10px_rgba(85,70,255,0.5)]"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(postCount % 10) * 10}%` }}
-                                transition={{ duration: 1.5, ease: "easeOut" }}
-                            />
-                        </div>
-                        <p className="text-[10px] text-zinc-500 italic">Next jackpot triggers at post #{(Math.floor(postCount / 10) + 1) * 10}</p>
-                    </div>
-                </section>
+                    )}
+                </div>
+            </aside>
 
-                <div className="grid lg:grid-cols-[1fr_320px] gap-8">
-                    {/* Action Area */}
-                    <div className="flex flex-col gap-6">
-                        <div className="glass-card flex flex-col gap-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <MessageSquare className="w-5 h-5 text-zinc-400" />
-                                <h3 className="font-bold">Post to the Wall</h3>
-                            </div>
-                            <textarea
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                disabled={!isConnected || isLoading}
-                                placeholder={isConnected ? "Speak your truth to the chain..." : "Connect wallet to start posting"}
-                                className="w-full h-32 bg-zinc-950/50 border border-white/5 rounded-xl p-4 text-zinc-100 placeholder:text-zinc-600 focus:ring-2 focus:ring-[#5546FF] outline-none transition-all resize-none shadow-inner"
-                            />
-                            <button
-                                onClick={isConnected ? handlePost : () => doOpenAuth()}
-                                disabled={isLoading || (isConnected && !message)}
-                                className={cn(
-                                    "w-full py-4 rounded-xl font-black tracking-wide text-sm transition-all shadow-lg active:scale-[0.98]",
-                                    isConnected
-                                        ? "bg-[#5546FF] text-white hover:bg-[#4436EE] shadow-[#5546FF]/20 active:shadow-inner"
-                                        : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700 shadow-zinc-950/50"
-                                )}
-                            >
-                                {isLoading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <RefreshCw className="w-4 h-4 animate-spin" />
-                                        Processing...
-                                    </span>
-                                ) : isConnected ? (
-                                    "POST MESSAGE (0.1 STX)"
-                                ) : (
-                                    "CONNECT WALLET TO POST"
-                                )}
-                            </button>
-                        </div>
-                    </div>
+            {/* Main Content Viewport */}
+            <main className="flex flex-col gap-8 min-w-0">
+                <AnimatePresence mode="wait">
+                    {activeTab === 'board' ? (
+                        <motion.div
+                            key="board"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="flex flex-col gap-8"
+                        >
+                            {/* Jackpot Card */}
+                            <section className="relative overflow-hidden glass-card !p-12 flex flex-col items-center justify-center text-center gap-8 group !bg-white/5 border border-white/10">
+                                <div className="absolute inset-0 bg-gradient-to-br from-[#5546FF]/10 via-transparent to-[#fc6432]/5 pointer-events-none" />
 
-                    {/* Live Feed Area */}
-                    <div className="flex flex-col gap-6">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <History className="w-5 h-5 text-[#5546FF]" />
-                                <h3 className="font-bold">{activeTab === 'history' ? 'Your Activity' : 'Live Activity'}</h3>
-                            </div>
-                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-sm shadow-emerald-500/5">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
-                                </span>
-                                <span className="text-[10px] font-black text-emerald-500 uppercase">Live</span>
-                            </div>
-                        </div>
+                                <button
+                                    onClick={refreshData}
+                                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 transition-all text-zinc-500 hover:text-white"
+                                >
+                                    <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin text-[#5546FF]")} />
+                                </button>
 
-                        <div className="flex flex-col gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                            <AnimatePresence initial={false} mode="popLayout">
-                                {filteredEvents.length === 0 ? (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 0.3 }}
-                                        className="flex flex-col items-center justify-center py-20 text-center"
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-[#5546FF]/30 blur-[100px] rounded-full animate-pulse" />
+                                    <Trophy className="w-24 h-24 text-amber-300 relative z-10 drop-shadow-[0_0_30px_rgba(252,211,77,0.3)]" />
+                                </div>
+
+                                <div className="flex flex-col gap-2 z-10">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#5546FF] animate-pulse">Cumulative Jackpot</p>
+                                    <h2 className="text-8xl font-black tracking-tighter text-white">
+                                        {(potBalance / 1000000).toFixed(2)} <span className="text-3xl text-zinc-600 font-bold -ml-2">STX</span>
+                                    </h2>
+                                </div>
+
+                                <div className="flex flex-col items-center gap-4 w-full max-w-sm z-10">
+                                    <div className="flex justify-between w-full text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+                                        <span>Next Trigger Progress</span>
+                                        <span className="text-[#5546FF]">{postCount % 10}/10 Posts</span>
+                                    </div>
+                                    <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/10 p-0.5">
+                                        <motion.div
+                                            className="h-full bg-gradient-to-r from-[#5546FF] to-[#fc6432] rounded-full"
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(postCount % 10) * 10}%` }}
+                                            transition={{ duration: 2, ease: "easeOut" }}
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Next payout at post #{(Math.floor(postCount / 10) + 1) * 10}</p>
+                                </div>
+                            </section>
+
+                            {/* Action Grid */}
+                            <div className="grid xl:grid-cols-[1fr_380px] gap-8">
+                                <div className="glass-card !bg-white/5 border border-white/10 p-8 flex flex-col gap-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 rounded-xl bg-[#5546FF]/10 text-[#5546FF]">
+                                                <MessageSquare className="w-5 h-5" />
+                                            </div>
+                                            <h3 className="font-black text-xl text-white">Post to the Wall</h3>
+                                        </div>
+                                        <p className="text-zinc-500 font-mono text-sm">0.1 STX</p>
+                                    </div>
+
+                                    <textarea
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                        disabled={isLoading}
+                                        placeholder="Speak your truth to the chain..."
+                                        className="w-full h-44 bg-black/40 border border-white/10 rounded-2xl p-6 text-zinc-100 placeholder:text-zinc-700 outline-none focus:ring-2 focus:ring-[#5546FF] transition-all resize-none text-lg"
+                                    />
+
+                                    <button
+                                        onClick={handlePost}
+                                        disabled={isLoading || !message}
+                                        className={cn(
+                                            "w-full py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-2xl active:scale-[0.98]",
+                                            message ? "bg-[#5546FF] text-white hover:bg-[#4436EE]" : "bg-zinc-900 text-zinc-600"
+                                        )}
                                     >
-                                        <CircleDot className="w-10 h-10 mb-2" />
-                                        <p className="text-xs font-medium">
-                                            {activeTab === 'history' ? "No activity from this wallet yet" : "Listening for events..."}
-                                        </p>
-                                    </motion.div>
+                                        {isLoading ? 'Processing...' : 'Post Message'}
+                                    </button>
+                                </div>
+
+                                <div className="glass-card !bg-white/5 border border-white/10 p-8 flex flex-col gap-6 h-[500px]">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
+                                                <CircleDot className="w-5 h-5" />
+                                            </div>
+                                            <h3 className="font-black text-xl text-white">Live Feed</h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+                                        <AnimatePresence>
+                                            {events.length === 0 ? (
+                                                <p className="text-zinc-600 text-center py-20 text-xs font-bold uppercase tracking-widest">No activity yet</p>
+                                            ) : (
+                                                events.map((evt, i) => (
+                                                    <motion.div
+                                                        key={evt.id || i}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-4 rounded-xl bg-white/5 border border-white/5"
+                                                    >
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <p className="text-[10px] font-black text-[#5546FF] uppercase">Post #{evt.data?.id}</p>
+                                                            <p className="text-[9px] text-zinc-600 font-mono">
+                                                                {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Now'}
+                                                            </p>
+                                                        </div>
+                                                        <p className="text-sm text-zinc-200 font-medium mb-2">{evt.data?.message}</p>
+                                                        <p className="text-[9px] text-zinc-500 font-mono truncate">By {evt.data?.poster}</p>
+                                                    </motion.div>
+                                                ))
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="history"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="glass-card !bg-white/5 border border-white/10 p-12 min-h-[600px] flex flex-col gap-8"
+                        >
+                            <h2 className="text-4xl font-black text-white tracking-tighter flex items-center gap-4">
+                                <History className="w-10 h-10 text-[#5546FF]" />
+                                Your Ledger
+                            </h2>
+                            <div className="grid gap-4">
+                                {filteredEvents.length === 0 ? (
+                                    <p className="text-zinc-600 text-center py-40 font-bold uppercase tracking-widest">No personal history</p>
                                 ) : (
                                     filteredEvents.map((evt, i) => (
-                                        <motion.div
-                                            key={evt.id || i}
-                                            initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                                            animate={{ opacity: 1, x: 0, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            className={cn(
-                                                "p-4 rounded-xl border transition-all",
-                                                evt.type === 'jackpot-won'
-                                                    ? "bg-amber-400/10 border-amber-400/30 shadow-lg shadow-amber-400/10"
-                                                    : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/[0.07]"
-                                            )}
-                                        >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    {evt.type === 'jackpot-won' && <Trophy className="w-3 h-3 text-amber-500" />}
-                                                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                                                        {evt.type === 'jackpot-won' ? '🎉 Jackpot!' : `Post #${evt.data?.id}`}
-                                                    </p>
-                                                </div>
-                                                <p className="text-[10px] text-zinc-600 font-medium">
-                                                    {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Just now'}
-                                                </p>
-                                            </div>
-                                            <p className="text-sm text-zinc-100 font-medium break-words leading-relaxed">
-                                                {evt.type === 'jackpot-won'
-                                                    ? `Winner: ${typeof evt.data?.winner === 'object' ? evt.data?.winner.value.slice(0, 10) : evt.data?.winner?.slice(0, 10)}... won ${(evt.data?.amount / 1000000).toFixed(2)} STX`
-                                                    : (typeof evt.data?.message === 'object' ? evt.data?.message?.value : evt.data?.message) || 'Untitled Post'}
-                                            </p>
-                                            <div className="mt-2 text-[8px] text-zinc-600 font-mono truncate">
-                                                By: {typeof evt.data?.poster === 'object' ? evt.data?.poster.value : (evt.data?.poster || evt.data?.winner)}
-                                            </div>
-                                        </motion.div>
+                                        <div key={evt.id || i} className="p-6 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-2">
+                                            <p className="text-[10px] font-black text-[#fc6432] uppercase">Message sent</p>
+                                            <p className="text-lg text-white font-medium">{evt.data?.message}</p>
+                                            <p className="text-xs text-zinc-500 bg-black/20 p-2 rounded-lg font-mono">Tx ID: {evt.id.slice(0, 20)}...</p>
+                                        </div>
                                     ))
                                 )}
-                            </AnimatePresence>
-                        </div>
-                    </div>
-                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </main>
-
-            <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 4px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                }
-            `}</style>
         </div>
     );
 }
