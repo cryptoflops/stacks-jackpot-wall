@@ -1,67 +1,68 @@
 # Stacks Jackpot Wall 🏆
 
-A high-performance, real-time decentralized messaging platform built on the Stacks blockchain. Features a micro-lottery system powered by Hiro Chainhooks.
-
-## 🚀 Key Features
-
-- **Decentralized Messaging**: High-frequency on-chain activity where every post is a permanent record on the Stacks network.
-- **Smart Payout Engine**: Automated Clarity contract logic—every 10th poster triggers a jackpot, winning 90% of the accumulated pot.
-- **Real-time Observability**: Powered by Hiro Chainhooks for instant UI updates and event tracking.
-- **Premium Web3 UI**: A sleek, dark-mode dashboard with glassmorphism and real-time progress monitoring.
-
-## 🛠️ Architecture
-
-- **Smart Contracts**: Clarity (v2) implemented in `/contracts`. Optimized for security and gas efficiency.
-- **Frontend**: Next.js 14 / React 18 for maximum stability with Stacks SDK integration.
-- **Event Streaming**: custom Hiro Chainhook predicates for real-time off-chain indexing.
-
-## 🏁 Quick Start
-
-### 1. Installation
-Install dependencies for both the testing suite and the frontend application:
-```bash
-# Root (Testing Suite)
-npm install
-
-# Web (Frontend)
-cd web && npm install
-```
-
-### 2. Contract Testing
-Verify the contract logic and jackpot mechanics:
-```bash
-# From root
-npm test
-```
-
-### 3. Start Dashboard
-```bash
-cd web
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to join the wall.
+A high-performance, real-time decentralized messaging scoreboard built on the **Stacks Blockchain**. Features an immutable micro-lottery system powered by **Clarity Smart Contracts** and real-time observability via **Hiro Chainhooks**.
 
 ---
 
-## 🌐 Multi-Network Support
-The dashboard supports both Stacks Testnet and Mainnet.
-- **Deploy to Testnet**: `./deploy-testnet.sh`
-- **Deploy to Mainnet**: `./deploy-mainnet.sh`
-- **Toggle Frontend**: Update `NEXT_PUBLIC_NETWORK` in your `.env`.
+## 🏗️ Stacks Building Mechanics
 
-## ☁️ Deployment (Vercel)
-This project is pre-configured for Vercel.
-1. Connect your GitHub repository to Vercel.
-2. The `vercel.json` will automatically handle the monorepo-style build.
-3. Configure **Environment Variables** in Vercel:
-   - `NEXT_PUBLIC_NETWORK`: `testnet` or `mainnet`
-   - `CHAINHOOK_SECRET`: A secret token for secure event ingestion.
+### 1. Smart Contract Strategy (Clarity 2.0)
+The core engine is an autonomous Clarity contract (`jackpot-wall.clar`) that enforces:
+- **Immutable State**: Every post is etched permanently on-chain.
+- **Deterministic Payouts**: Every 10th poster is rewarded with 90% of the pot, calculated at settlement.
+- **Protocol Fees**: 10% is retained by the contract to sustain the ecosystem.
+- **Zero Control**: No admin keys, no pause buttons—pure, decentralized code.
 
-## ⚙️ Configuration
-### Contract Deployment
-- **Testnet**: `ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall`
-- **Mainnet**: `SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall`
+### 2. Real-Time Observability (Chainhooks)
+Instead of polling the Stacks node, this project utilizes **Hiro Chainhooks** to achieve sub-second UI updates:
+- **Predicates**: Custom hooks listen for the `print` events (`new-post` and `jackpot-won`) emitted by the contract.
+- **Latency**: Near-instant data ingestion, bypassing the block confirmation lag for non-critical UI feedback.
 
+### 3. Multi-Network Deployment
+The architecture is designed for seamless transitions between environments using standardized Clarinet deployment plans.
+
+---
+
+## 🛠️ Repository Structure
+
+```text
+├── contracts/          # Clarity 2.0 smart contract source
+├── chainhooks/         # JSON predicates for Hiro Chainhook
+├── tests/              # Vitest suite for contract logic
+├── deployments/        # Clarinet deployment plans (Mainnet/Testnet)
+└── web/                # Stacks-enabled Dashboard (Next.js/Stacks SDK)
+```
+
+---
+
+## 🏁 Quick Start
+
+### 1. Contract Development & Testing
+Ensure you have [Clarinet](https://github.com/hirosystems/clarinet) installed.
+
+```bash
+# Run the test suite
+npm test
+
+# Check contract syntax
+clarinet check
+```
+
+### 2. Multi-Network Ship
+```bash
+# Deploy to Testnet
+./deploy-testnet.sh
+
+# Deploy to Mainnet (Requires SP... contract address)
+./deploy-mainnet.sh
+```
+
+---
+
+## 🛡️ Security & Privacy
+- **Paranoid Review**: Full security audit available in `security_audit.md`.
+- **Zero-Key Principle**: This repository contains no private keys, seed phrases, or hardcoded secrets.
+- **Audit Trails**: All event logs are printed on-chain for public verification.
 
 ## 📜 License
 MIT
