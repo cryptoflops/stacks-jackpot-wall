@@ -35,10 +35,11 @@ export default function Jackpot() {
 
     // Multi-Network Configuration
     const IS_MAINNET = process.env.NEXT_PUBLIC_NETWORK === 'mainnet';
+    const TESTNET_CONTRACT = process.env.NEXT_PUBLIC_TESTNET_CONTRACT || 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P';
+    const MAINNET_CONTRACT = process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P';
+
     const CURRENT_NETWORK = IS_MAINNET ? STACKS_MAINNET : STACKS_TESTNET;
-    const CONTRACT_ADDRESS = IS_MAINNET
-        ? (process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P')
-        : (process.env.NEXT_PUBLIC_TESTNET_CONTRACT || 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P');
+    const CONTRACT_ADDRESS = IS_MAINNET ? MAINNET_CONTRACT : TESTNET_CONTRACT;
     const CONTRACT_NAME = 'jackpot-wall';
 
     // Robust Read-Only Helper using fetch (Bypasses SDK import issues)
@@ -347,7 +348,16 @@ export default function Jackpot() {
                         <p className="font-bold border-bottom border-white/10 pb-1">ENVIRONMENT CHECK</p>
                         <p>NETWORK: <span className="text-zinc-300">{process.env.NEXT_PUBLIC_NETWORK || 'MISSING (Defaults to testnet)'}</span></p>
                         <p>IS_MAINNET: <span className="text-zinc-300">{String(IS_MAINNET)}</span></p>
-                        <p className="truncate">CONTRACT: <span className="text-zinc-300">{CONTRACT_ADDRESS}</span></p>
+                        <p className="truncate">CONTRACT: <span className={cn("text-zinc-300", CONTRACT_ADDRESS.includes('AMP23P') && "text-red-500 font-black")}>
+                            {CONTRACT_ADDRESS} {CONTRACT_ADDRESS.includes('AMP23P') ? '(🚨 PLACEHOLDER)' : '(✅ LOADED)'}
+                        </span></p>
+                        {CONTRACT_ADDRESS.includes('AMP23P') && (
+                            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded text-red-400">
+                                <p className="font-bold underline mb-1">ACTION REQUIRED:</p>
+                                <p>You haven't set your actual Contract Address in Vercel!</p>
+                                <p className="mt-1 opacity-80">Add: NEXT_PUBLIC_TESTNET_CONTRACT</p>
+                            </div>
+                        )}
                         <p className="truncate">USER: <span className="text-zinc-300">{getUserAddress() || 'NONE'}</span></p>
                         <div className="pt-1 border-t border-white/10 flex flex-col gap-1">
                             <p>POT: {potBalance} μSTX</p>
