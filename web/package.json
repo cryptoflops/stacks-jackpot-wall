@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@hirosystems/chainhooks-client": "^1.0.0",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.4.2",
+    "@react-three/drei": "^9.106.0",
+    "@react-three/fiber": "^8.17.10",
     "@stacks/connect": "^7.10.0",
     "@stacks/connect-react": "^22.6.0",
     "@stacks/network": "^7.3.0",
