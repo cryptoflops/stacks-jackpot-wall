@@ -124,7 +124,6 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
         try {
             console.log('📡 Syncing Events...', { currentCounter });
             const userAddr = getUserAddress();
-            const apiHost = IS_MAINNET ? 'api.mainnet.hiro.so' : 'api.testnet.hiro.so';
 
             // 1. Fetch Local App Events (Chainhook)
             const res = await fetch('/api/events');
@@ -132,34 +131,35 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             let allEvents: FeedEvent[] = json.events || [];
 
             // 2. Network Fallback: Fetch Recent Contract TXs for Live Feed Links
-            // This ensures links exist even if Chainhooks are delayed/errored
             try {
                 const contractId = `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`;
-                const contractTxRes = await fetch(`https://${apiHost}/extended/v1/address/${contractId}/transactions?limit=20`);
+                const path = `/extended/v1/address/${contractId}/transactions?limit=20`;
+                const contractTxRes = await fetch(`/api/stacks?path=${encodeURIComponent(path)}&mainnet=${IS_MAINNET}`);
                 const contractTxJson = await contractTxRes.json();
 
-                const chainEvents = contractTxJson.results
-                    .filter((tx: any) => tx.tx_status === 'success' && tx.tx_type === 'contract_call')
-                    .map((tx: any) => ({
-                        id: tx.tx_id,
-                        txId: tx.tx_id,
-                        type: tx.contract_call.function_name === 'post-message' ? 'new-post' : 'user-tx',
-                        status: 'success',
-                        timestamp: (tx.burn_block_time || Date.now() / 1000) * 1000,
-                        data: {
-                            message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Posted to Wall',
-                            poster: tx.sender_address,
-                            id: '?' // Post ID relative to transaction, hard to get without secondary index
-                        }
-                    }));
+                if (contractTxJson.results) {
+                    const chainEvents = contractTxJson.results
+                        .filter((tx: any) => tx.tx_status === 'success' && tx.tx_type === 'contract_call')
+                        .map((tx: any) => ({
+                            id: tx.tx_id,
+                            txId: tx.tx_id,
+                            type: tx.contract_call.function_name === 'post-message' ? 'new-post' : 'user-tx',
+                            status: 'success',
+                            timestamp: (tx.burn_block_time || Date.now() / 1000) * 1000,
+                            data: {
+                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Posted to Wall',
+                                poster: tx.sender_address,
+                                id: '?'
+                            }
+                        }));
 
-                // Merge with priority on Chainhook data (which has post IDs)
-                const seenTxIds = new Set(allEvents.map(e => e.txId || e.id));
-                chainEvents.forEach((ce: any) => {
-                    if (!seenTxIds.has(ce.id)) {
-                        allEvents.push(ce);
-                    }
-                });
+                    const seenTxIds = new Set(allEvents.map(e => e.txId || e.id));
+                    chainEvents.forEach((ce: any) => {
+                        if (!seenTxIds.has(ce.id)) {
+                            allEvents.push(ce);
+                        }
+                    });
+                }
             } catch (err) {
                 console.error('Contract TX fallback failed:', err);
             }
@@ -167,27 +167,30 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             // 3. Robust User History (Direct API)
             if (userAddr) {
                 try {
-                    const txRes = await fetch(`https://${apiHost}/extended/v1/address/${userAddr}/transactions?limit=40`);
+                    const path = `/extended/v1/address/${userAddr}/transactions?limit=40`;
+                    const txRes = await fetch(`/api/stacks?path=${encodeURIComponent(path)}&mainnet=${IS_MAINNET}`);
                     const txJson = await txRes.json();
 
-                    const userTxs = txJson.results
-                        .filter((tx: any) => tx.tx_type === 'contract_call' && tx.contract_call.contract_id.includes(CONTRACT_NAME))
-                        .map((tx: any) => ({
-                            id: tx.tx_id,
-                            txId: tx.tx_id,
-                            type: 'user-tx',
-                            status: tx.tx_status,
-                            timestamp: (tx.burn_block_time || tx.parent_burn_block_time || Date.now() / 1000) * 1000,
-                            data: {
-                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Interacted with Wall',
-                                poster: tx.sender_address
-                            }
-                        }));
+                    if (txJson.results) {
+                        const userTxs = txJson.results
+                            .filter((tx: any) => tx.tx_type === 'contract_call' && tx.contract_call.contract_id.includes(CONTRACT_NAME))
+                            .map((tx: any) => ({
+                                id: tx.tx_id,
+                                txId: tx.tx_id,
+                                type: 'user-tx',
+                                status: tx.tx_status,
+                                timestamp: (tx.burn_block_time || tx.parent_burn_block_time || Date.now() / 1000) * 1000,
+                                data: {
+                                    message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Interacted with Wall',
+                                    poster: tx.sender_address
+                                }
+                            }));
 
-                    const finalSeen = new Set(allEvents.map(e => e.txId || e.id));
-                    userTxs.forEach((tx: any) => {
-                        if (!finalSeen.has(tx.id)) allEvents.push(tx);
-                    });
+                        const finalSeen = new Set(allEvents.map(e => e.txId || e.id));
+                        userTxs.forEach((tx: any) => {
+                            if (!finalSeen.has(tx.id)) allEvents.push(tx);
+                        });
+                    }
                 } catch (txErr) {
                     console.error('User history fetch failed:', txErr);
                 }
