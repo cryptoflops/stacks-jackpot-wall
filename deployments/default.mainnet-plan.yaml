@@ -9,10 +9,10 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: jackpot-wall
+            contract-name: passkey-vault
             expected-sender: SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ
-            cost: 22800
-            path: contracts/jackpot-wall.clar
+            cost: 729689
+            path: contracts/passkey-vault.clar
             anchor-block-only: true
             clarity-version: 2
       epoch: "3.3"
