@@ -9,6 +9,11 @@ requirements = []
 path = 'contracts/jackpot-wall.clar'
 clarity_version = 2
 epoch = 'latest'
+
+[contracts.passkey-vault]
+path = 'contracts/passkey-vault.clar'
+clarity_version = 2
+epoch = 'latest'
 [repl.analysis]
 passes = ['check_checker']
 
