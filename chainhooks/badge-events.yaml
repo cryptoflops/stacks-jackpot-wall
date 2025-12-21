@@ -1,0 +1,26 @@
+---
+chain: stacks
+uuid: "builder-badge-events"
+name: "Builder Badge NFT Events"
+version: 1
+networks:
+  testnet:
+    if_this:
+      scope: contract
+      contract_identifier: ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.builder-badge
+      events:
+        - print_event
+    then_that:
+      http_post:
+        url: http://localhost:3000/api/events
+        authorization_header: Bearer secret-token
+  mainnet:
+    if_this:
+      scope: contract
+      contract_identifier: SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.builder-badge
+      events:
+        - print_event
+    then_that:
+      http_post:
+        url: http://localhost:3000/api/events
+        authorization_header: Bearer secret-token

@@ -9,10 +9,10 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: passkey-vault
+            contract-name: builder-badge
             expected-sender: SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ
-            cost: 729689
-            path: contracts/passkey-vault.clar
+            cost: 728665
+            path: contracts/builder-badge.clar
             anchor-block-only: true
             clarity-version: 2
       epoch: "3.3"
