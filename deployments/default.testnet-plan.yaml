@@ -8,22 +8,11 @@ plan:
   batches:
     - id: 0
       transactions:
-        - requirement-publish:
-            contract-id: SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait
-            remap-sender: ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P
-            remap-principals:
-              SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9: ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P
-            cost: 4680
-            path: "./.cache/requirements/SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.clar"
-            clarity-version: 1
-      epoch: "2.0"
-    - id: 1
-      transactions:
-        - contract-publish:
-            contract-name: builder-badge
+        - contract-call:
+            contract-id: ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.builder-badge
             expected-sender: ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P
-            cost: 28990
-            path: contracts/builder-badge.clar
+            cost: 10000
+            method: mint
+            parameters: []
             anchor-block-only: true
-            clarity-version: 2
       epoch: "3.3"
