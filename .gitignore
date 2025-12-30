@@ -11,3 +11,11 @@ coverage
 *.info
 costs-reports.json
 node_modules
+
+# metadata
+.agent/
+*-agent.md
+STACKS_ENGINEER.md
+implementation_plan*.md
+task.md
+walkthrough.md
