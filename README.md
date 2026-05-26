@@ -2,6 +2,8 @@
 
 A high-performance, real-time decentralized messaging scoreboard built on the **Stacks Blockchain**. Features an immutable micro-lottery system powered by **Clarity Smart Contracts** and real-time observability via **Hiro Chainhooks**.
 
+**Live Demo**: [jackpot-wall.vercel.app](https://jackpot-wall.vercel.app) (alternative: [stacks-jackpot-wall.vercel.app](https://stacks-jackpot-wall.vercel.app))
+
 ---
 
 ## 🏗️ Stacks Building Mechanics

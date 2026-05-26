@@ -73,4 +73,4 @@ The dashboard is fully compatible with Vercel and supports API routes out of the
 3. **Configure Environment Variables**: Add the variables from `.env.local` to Vercel's Environment Variables settings.
 4. **Deploy**: Trigger a build.
 
-Once deployed, you can point your **Hiro Chainhook** predicate to target the URL `https://your-app.vercel.app/api/chainhook` with the `Authorization: Bearer <CHAINHOOK_SECRET>` header to enable sub-second real-time event updates.
+Once deployed, you can point your **Hiro Chainhook** predicate to target the URL `https://jackpot-wall.vercel.app/api/chainhook` (or `https://stacks-jackpot-wall.vercel.app/api/chainhook`) with the `Authorization: Bearer <CHAINHOOK_SECRET>` header to enable sub-second real-time event updates.
