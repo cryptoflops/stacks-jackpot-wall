@@ -72,7 +72,7 @@ plan:
     - id: 1
       transactions:
         - emulated-contract-publish:
-            contract-name: jackpot-wall
+            contract-name: jackpot-wall-v2
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/jackpot-wall.clar
             clarity-version: 2

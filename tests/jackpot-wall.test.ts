@@ -13,7 +13,7 @@ describe('Jackpot Wall Contract', () => {
 
     // 1. Post Message
     const response = simnet.callPublicFn(
-      'jackpot-wall',
+      'jackpot-wall-v2',
       'post-message',
       [Cl.stringUtf8(message)],
       wallet1
@@ -24,7 +24,7 @@ describe('Jackpot Wall Contract', () => {
 
     // 3. Verify No Transfer (Pot balance remains 0)
     const balanceResponse = simnet.callReadOnlyFn(
-      'jackpot-wall',
+      'jackpot-wall-v2',
       'get-pot-balance',
       [],
       wallet1
@@ -36,7 +36,7 @@ describe('Jackpot Wall Contract', () => {
     // 1. Seed 9 posts (free)
     for (let i = 1; i <= 9; i++) {
       simnet.callPublicFn(
-        'jackpot-wall',
+        'jackpot-wall-v2',
         'post-message',
         [Cl.stringUtf8(`Post #${i}`)],
         i % 2 === 0 ? wallet2 : wallet1
@@ -45,7 +45,7 @@ describe('Jackpot Wall Contract', () => {
 
     // Verify pot balance is 0
     let balanceResponse = simnet.callReadOnlyFn(
-      'jackpot-wall',
+      'jackpot-wall-v2',
       'get-pot-balance',
       [],
       wallet1
@@ -53,11 +53,11 @@ describe('Jackpot Wall Contract', () => {
     expect(balanceResponse.result).toEqual(Cl.uint(0));
 
     // 2. Pre-fund the contract pot directly with 10 STX (10,000,000 micro-STX)
-    simnet.transferSTX(10_000_000n, `${deployer}.jackpot-wall`, wallet1);
+    simnet.transferSTX(10_000_000n, `${deployer}.jackpot-wall-v2`, wallet1);
 
     // Verify 10 STX is in pot
     balanceResponse = simnet.callReadOnlyFn(
-      'jackpot-wall',
+      'jackpot-wall-v2',
       'get-pot-balance',
       [],
       wallet1
@@ -66,7 +66,7 @@ describe('Jackpot Wall Contract', () => {
 
     // 3. 10th Post (The Winner) - Wallet 3
     const winResponse = simnet.callPublicFn(
-      'jackpot-wall',
+      'jackpot-wall-v2',
       'post-message',
       [Cl.stringUtf8("Winning Post!")],
       wallet3
@@ -83,7 +83,7 @@ describe('Jackpot Wall Contract', () => {
     expect(events.length).toBeGreaterThanOrEqual(2);
 
     // Check Payout Transfer
-    const payoutEvent = events.find(e => e.event === 'stx_transfer_event' && e.data.sender === `${deployer}.jackpot-wall`);
+    const payoutEvent = events.find(e => e.event === 'stx_transfer_event' && e.data.sender === `${deployer}.jackpot-wall-v2`);
     expect(payoutEvent).toBeDefined();
     expect(payoutEvent?.data.amount).toBe("9000000"); // 9 STX (90%)
     expect(payoutEvent?.data.recipient).toBe(wallet3);

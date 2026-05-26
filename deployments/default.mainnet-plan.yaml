@@ -9,10 +9,10 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: builder-badge
+            contract-name: jackpot-wall-v2
             expected-sender: SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ
-            cost: 728665
-            path: contracts/builder-badge.clar
+            cost: 763934
+            path: contracts/jackpot-wall.clar
             anchor-block-only: true
             clarity-version: 2
       epoch: "3.3"

@@ -57,7 +57,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
     // Multi-Network Configuration (Aligned with mainnet deployment)
     const IS_MAINNET = process.env.NEXT_PUBLIC_NETWORK === 'mainnet' || process.env.NEXT_PUBLIC_NETWORK === 'Mainnet';
     const TESTNET_CONTRACT = process.env.NEXT_PUBLIC_TESTNET_CONTRACT || 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall';
-    const MAINNET_CONTRACT = process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall';
+    const MAINNET_CONTRACT = process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall-v2';
 
     const CURRENT_NETWORK = IS_MAINNET ? STACKS_MAINNET : STACKS_TESTNET;
 
