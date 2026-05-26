@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "A decentralized jackpot wall on Stacks with real-time Chainhook integration.",
   "type": "module",
-  "private": true,
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cryptoflops/stacks-jackpot-wall.git"
+  },
   "scripts": {
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
@@ -18,6 +22,7 @@
   "dependencies": {
     "@hirosystems/chainhooks-client": "^1.0.0",
     "@stacks/clarinet-sdk": "^3.9.0",
+    "@stacks/connect": "^8.2.6",
     "@stacks/transactions": "^7.2.0",
     "body-parser": "^2.2.1",
     "chokidar-cli": "^3.0.0",
