@@ -1,14 +1,11 @@
 
 ;; Jackpot Wall - Stacks Builder Challenge
-;; - 1 STX to post
 ;; - Every 10th poster wins 90% of the pot
 ;; - Designed for High Frequency + Chainhook triggers
 
-(define-constant err-transfer-failed (err u100))
 (define-constant err-msg-too-long (err u101))
 
 ;; Constants
-(define-constant COST_PER_POST u100000) ;; 0.1 STX
 (define-constant WIN_INTERVAL u10)
 (define-constant PAYOUT_RATIO u90) ;; 90%
 
@@ -27,22 +24,22 @@
         (sender tx-sender)
         (contract-addr (as-contract tx-sender))
     )
-        ;; 1. Collect Fee (1 STX)
-        (unwrap! (stx-transfer? COST_PER_POST sender contract-addr) err-transfer-failed)
-        
-        ;; 2. Store Post
+        ;; 1. Store Post
         (map-set posts next-count { poster: sender, message: message })
         (var-set counter next-count)
 
-        ;; 3. Check Jackpot Condition
+        ;; 2. Check Jackpot Condition
         (if (is-eq (mod next-count WIN_INTERVAL) u0)
             (let (
                 ;; Calculate Payout
                 (pot-balance (stx-get-balance contract-addr))
                 (payout (/ (* pot-balance PAYOUT_RATIO) u100))
             )
-                ;; Payout Winner (sender)
-                (try! (as-contract (stx-transfer? payout tx-sender sender)))
+                ;; Payout Winner (sender) if pot is not empty
+                (if (> payout u0)
+                    (try! (as-contract (stx-transfer? payout tx-sender sender)))
+                    true
+                )
                 
                 (print { 
                     event: "jackpot-won", 

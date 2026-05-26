@@ -1,5 +1,4 @@
-
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { Cl } from '@stacks/transactions';
 
 const accounts = simnet.getAccounts();
@@ -9,13 +8,10 @@ const wallet2 = accounts.get("wallet_2")!;
 const wallet3 = accounts.get("wallet_3")!;
 
 describe('Jackpot Wall Contract', () => {
-  it('ensures user can post a message and pays 1 STX', () => {
+  it('ensures user can post a message for free (no fee)', () => {
     const message = "Hello Stacks!";
 
-    // 1. Check initial balance
-    const initialBalance = simnet.getAssetsMap().get(deployer)?.get("STX") || 0n;
-
-    // 2. Post Message
+    // 1. Post Message
     const response = simnet.callPublicFn(
       'jackpot-wall',
       'post-message',
@@ -23,42 +19,52 @@ describe('Jackpot Wall Contract', () => {
       wallet1
     );
 
-    // 3. Verify Success
+    // 2. Verify Success
     expect(response.result).toBeOk(Cl.uint(1)); // First post, ID 1
 
-    // 4. Verify Transfer (Wallet 1 pays 1 STX)
+    // 3. Verify No Transfer (Pot balance remains 0)
     const balanceResponse = simnet.callReadOnlyFn(
       'jackpot-wall',
       'get-pot-balance',
       [],
       wallet1
     );
-    // get-pot-balance returns 'uint', not 'response'
-    expect(balanceResponse.result).toEqual(Cl.uint(100000));
+    expect(balanceResponse.result).toEqual(Cl.uint(0));
   });
 
-  it('triggers jackpot payout on the 10th post', () => {
-    // Seed pot with 9 posts
+  it('triggers jackpot payout on the 10th post using pre-funded pot', () => {
+    // 1. Seed 9 posts (free)
     for (let i = 1; i <= 9; i++) {
       simnet.callPublicFn(
         'jackpot-wall',
         'post-message',
         [Cl.stringUtf8(`Post #${i}`)],
-        // Rotate wallets to simulate traffic
         i % 2 === 0 ? wallet2 : wallet1
       );
     }
 
-    // Verify 0.9 STX in pot
-    const balanceResponse = simnet.callReadOnlyFn(
+    // Verify pot balance is 0
+    let balanceResponse = simnet.callReadOnlyFn(
       'jackpot-wall',
       'get-pot-balance',
       [],
       wallet1
     );
-    expect(balanceResponse.result).toEqual(Cl.uint(900000));
+    expect(balanceResponse.result).toEqual(Cl.uint(0));
 
-    // 10th Post (The Winner) - Wallet 3
+    // 2. Pre-fund the contract pot directly with 10 STX (10,000,000 micro-STX)
+    simnet.transferSTX(10_000_000n, `${deployer}.jackpot-wall`, wallet1);
+
+    // Verify 10 STX is in pot
+    balanceResponse = simnet.callReadOnlyFn(
+      'jackpot-wall',
+      'get-pot-balance',
+      [],
+      wallet1
+    );
+    expect(balanceResponse.result).toEqual(Cl.uint(10000000));
+
+    // 3. 10th Post (The Winner) - Wallet 3
     const winResponse = simnet.callPublicFn(
       'jackpot-wall',
       'post-message',
@@ -72,20 +78,14 @@ describe('Jackpot Wall Contract', () => {
     const events = winResponse.events;
 
     // Should have:
-    // 1. STX transfer (User -> Contract)
-    // 2. STX transfer (Contract -> User) [Payout]
-    // 3. Print Event (jackpot-won)
-
-    expect(events.length).toBeGreaterThanOrEqual(3);
+    // 1. STX transfer (Contract -> User) [Payout: 90% of 10 STX = 9 STX]
+    // 2. Print Event (jackpot-won)
+    expect(events.length).toBeGreaterThanOrEqual(2);
 
     // Check Payout Transfer
-    // Pot was 9 STX + 1 STX (new post) = 10 STX.
-    // Payout = 90% of 10 STX = 9 STX.
-    // Contract keeps 1 STX.
-
     const payoutEvent = events.find(e => e.event === 'stx_transfer_event' && e.data.sender === `${deployer}.jackpot-wall`);
     expect(payoutEvent).toBeDefined();
-    expect(payoutEvent?.data.amount).toBe("900000");
+    expect(payoutEvent?.data.amount).toBe("9000000"); // 9 STX (90%)
     expect(payoutEvent?.data.recipient).toBe(wallet3);
 
     // Check Print Event (for Chainhook)
@@ -93,7 +93,6 @@ describe('Jackpot Wall Contract', () => {
     expect(printEvent).toBeDefined();
 
     const value = printEvent?.data.value;
-    // Simple string check for now, can parse Cl.value if needed
     expect(JSON.stringify(value)).toContain("jackpot-won");
     expect(JSON.stringify(value)).toContain("is_jackpot");
   });
