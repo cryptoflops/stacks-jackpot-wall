@@ -57,6 +57,28 @@ clarinet check
 ./deploy-mainnet.sh
 ```
 
+### 3. Run the Web App Dashboard
+You can run the web app directly from the root directory.
+
+```bash
+# Install dependencies
+npm install
+
+# Start the dashboard in development mode
+npm run dev:web
+
+# Build the dashboard for production
+npm run build:web
+```
+
+---
+
+## 🚀 Deploy the Web App Page
+
+You can deploy the web app dashboard instantly to **Vercel** with a single click:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcryptoflops%2Fstacks-jackpot-wall&root-directory=web&env=NEXT_PUBLIC_NETWORK,NEXT_PUBLIC_TESTNET_CONTRACT,NEXT_PUBLIC_MAINNET_CONTRACT,CHAINHOOK_SECRET,TALENT_PROTOCOL_API_KEY,HIRO_API_KEY)
+
 ---
 
 ## 🛡️ Security & Privacy

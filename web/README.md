@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stacks Jackpot Dashboard 🏆
 
-## Getting Started
+A modern, high-fidelity Web3 frontend built with Next.js, Tailwind CSS, Framer Motion, and Three.js (via React Three Fiber). This dashboard allows users to interact with the decentralized **Stacks Jackpot Wall** smart contract in real time.
 
-First, run the development server:
+---
+
+## 🚀 Key Features
+
+- **Wallet Connection**: Seamless connection using the `@stacks/connect` SDK.
+- **Dynamic 3D Background**: Immersive WebGL shader background using Three.js.
+- **Real-Time Data Ingestion**: Powered by Hiro Chainhooks via local webhook endpoint `/api/chainhook`.
+- **Talent Protocol Integration**: Displays user reputation score (Builder Score) to prevent spam and highlight community members.
+- **Live Feed & History**: Live stream of posts and jackpot events directly on Stacks.
+
+---
+
+## 🛠️ Environment Configuration
+
+Copy the template file to create your local environment file:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp env.template .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Configure the following variables in `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Description | Default / Example |
+|---|---|---|
+| `NEXT_PUBLIC_NETWORK` | Target network (`testnet` or `mainnet`) | `testnet` |
+| `NEXT_PUBLIC_TESTNET_CONTRACT` | Address of deployed testnet contract | `ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall` |
+| `NEXT_PUBLIC_MAINNET_CONTRACT` | Address of deployed mainnet contract | `SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall` |
+| `CHAINHOOK_SECRET` | Secret Bearer token to authorize Chainhook events | `secret-token` |
+| `TALENT_PROTOCOL_API_KEY` | API key to fetch passports from Talent Protocol | `your_api_key` |
+| `HIRO_API_KEY` | Optional Hiro API key to bypass rate limits | `your_api_key` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🏁 Local Development
 
-To learn more about Next.js, take a look at the following resources:
+You can run the dashboard from the root repository or inside the `web` directory.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Running from the Root Directory (Recommended)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# Start Next.js in development mode
+npm run dev:web
 
-## Deploy on Vercel
+# Build for production
+npm run build:web
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Start production build
+npm run start:web
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Run ESLint check
+npm run lint:web
+```
+
+### Running from the `web` Directory
+
+```bash
+cd web
+npm run dev
+```
+
+---
+
+## 📦 Deployment to Vercel
+
+The dashboard is fully compatible with Vercel and supports API routes out of the box.
+
+1. **Deploy Repository**: Import your repository into Vercel.
+2. **Set root directory**: Change the root directory setting to `web`.
+3. **Configure Environment Variables**: Add the variables from `.env.local` to Vercel's Environment Variables settings.
+4. **Deploy**: Trigger a build.
+
+Once deployed, you can point your **Hiro Chainhook** predicate to target the URL `https://your-app.vercel.app/api/chainhook` with the `Authorization: Bearer <CHAINHOOK_SECRET>` header to enable sub-second real-time event updates.

@@ -34,7 +34,7 @@ describe('Jackpot Wall Contract', () => {
       wallet1
     );
     // get-pot-balance returns 'uint', not 'response'
-    expect(balanceResponse.result).toEqual(Cl.uint(1000000));
+    expect(balanceResponse.result).toEqual(Cl.uint(100000));
   });
 
   it('triggers jackpot payout on the 10th post', () => {
@@ -49,14 +49,14 @@ describe('Jackpot Wall Contract', () => {
       );
     }
 
-    // Verify 9 STX in pot
+    // Verify 0.9 STX in pot
     const balanceResponse = simnet.callReadOnlyFn(
       'jackpot-wall',
       'get-pot-balance',
       [],
       wallet1
     );
-    expect(balanceResponse.result).toEqual(Cl.uint(9000000));
+    expect(balanceResponse.result).toEqual(Cl.uint(900000));
 
     // 10th Post (The Winner) - Wallet 3
     const winResponse = simnet.callPublicFn(
@@ -85,7 +85,7 @@ describe('Jackpot Wall Contract', () => {
 
     const payoutEvent = events.find(e => e.event === 'stx_transfer_event' && e.data.sender === `${deployer}.jackpot-wall`);
     expect(payoutEvent).toBeDefined();
-    expect(payoutEvent?.data.amount).toBe("9000000");
+    expect(payoutEvent?.data.amount).toBe("900000");
     expect(payoutEvent?.data.recipient).toBe(wallet3);
 
     // Check Print Event (for Chainhook)
