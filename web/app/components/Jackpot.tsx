@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useConnect } from '@stacks/connect-react';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { openContractCall } from '@stacks/connect';
-import { uintCV, stringUtf8CV, cvToJSON, fetchCallReadOnlyFunction, PostConditionMode } from '@stacks/transactions';
+import { uintCV, stringUtf8CV, cvToJSON, fetchCallReadOnlyFunction, PostConditionMode, makeStandardSTXPostCondition, FungibleConditionCode } from '@stacks/transactions';
 import { userSession } from '@/lib/stacks';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -52,30 +52,35 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [userReputation, setUserReputation] = useState<{ score: number; passport_id: string | null } | null>(null);
     const [reputationMap, setReputationMap] = useState<{ [address: string]: number }>({});
+    const [enterJackpot, setEnterJackpot] = useState<boolean>(false);
 
     // Multi-Network Configuration
     // Multi-Network Configuration (Aligned with mainnet deployment)
     const IS_MAINNET = process.env.NEXT_PUBLIC_NETWORK === 'mainnet' || process.env.NEXT_PUBLIC_NETWORK === 'Mainnet';
-    const TESTNET_CONTRACT = process.env.NEXT_PUBLIC_TESTNET_CONTRACT || 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall';
-    const MAINNET_CONTRACT = process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall-v2';
+    
+    // Contract principals for Free and Jackpot (Paid) modes
+    const JACKPOT_CONTRACT = IS_MAINNET 
+        ? (process.env.NEXT_PUBLIC_MAINNET_CONTRACT || 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall')
+        : (process.env.NEXT_PUBLIC_TESTNET_CONTRACT || 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall');
+
+    const FREE_CONTRACT = IS_MAINNET
+        ? 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall-v2'
+        : 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall-v2';
 
     const CURRENT_NETWORK = IS_MAINNET ? STACKS_MAINNET : STACKS_TESTNET;
 
-    // Parse Address and Name (In case user provides SP...addr.contract-name)
-    const rawContract = IS_MAINNET ? MAINNET_CONTRACT : TESTNET_CONTRACT;
-    const [CONTRACT_ADDRESS, CUSTOM_NAME] = rawContract.split('.');
-    const CONTRACT_NAME = CUSTOM_NAME || 'jackpot-wall';
-
     // Robust Read-Only Helper using fetch (Bypasses SDK import issues)
-    const callContractReadOnly = async (functionName: string, args: any[] = []) => {
+    const callContractReadOnly = async (functionName: string, args: any[] = [], useJackpotContract: boolean = true) => {
         try {
+            const targetContract = useJackpotContract ? JACKPOT_CONTRACT : FREE_CONTRACT;
+            const [contractAddress, contractName] = targetContract.split('.');
             const res = await fetchCallReadOnlyFunction({
-                contractAddress: CONTRACT_ADDRESS,
-                contractName: CONTRACT_NAME,
+                contractAddress,
+                contractName,
                 functionName,
                 functionArgs: args,
                 network: CURRENT_NETWORK,
-                senderAddress: CONTRACT_ADDRESS,
+                senderAddress: contractAddress,
             });
             return res;
         } catch (e) {
@@ -86,14 +91,14 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
     const refreshData = async () => {
         setIsLoading(true);
-        console.log('🔄 Syncing on-chain data...', { network: IS_MAINNET ? 'mainnet' : 'testnet', contract: CONTRACT_ADDRESS });
+        console.log('🔄 Syncing on-chain data...', { network: IS_MAINNET ? 'mainnet' : 'testnet', jackpot: JACKPOT_CONTRACT, free: FREE_CONTRACT });
         try {
             const signedIn = userSession.isUserSignedIn();
             setIsConnected(signedIn);
 
             const [potRes, countRes] = await Promise.all([
-                callContractReadOnly('get-pot-balance'),
-                callContractReadOnly('get-counter')
+                callContractReadOnly('get-pot-balance', [], true),
+                callContractReadOnly('get-counter', [], true)
             ]);
 
             const potVal = Number(cvToJSON(potRes).value);
@@ -130,35 +135,37 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             const json = await res.json();
             let allEvents: FeedEvent[] = json.events || [];
 
-            // 2. Network Fallback: Fetch Recent Contract TXs for Live Feed Links
+            // 2. Network Fallback: Fetch Recent Contract TXs for both contracts
             try {
-                const contractId = `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`;
-                const path = `/extended/v1/address/${contractId}/transactions?limit=20`;
-                const contractTxRes = await fetch(`/api/stacks?path=${encodeURIComponent(path)}&mainnet=${IS_MAINNET}`);
-                const contractTxJson = await contractTxRes.json();
+                const contractsToFetch = [JACKPOT_CONTRACT, FREE_CONTRACT];
+                for (const contractId of contractsToFetch) {
+                    const path = `/extended/v1/address/${contractId}/transactions?limit=15`;
+                    const contractTxRes = await fetch(`/api/stacks?path=${encodeURIComponent(path)}&mainnet=${IS_MAINNET}`);
+                    const contractTxJson = await contractTxRes.json();
 
-                if (contractTxJson.results) {
-                    const chainEvents = contractTxJson.results
-                        .filter((tx: any) => tx.tx_status === 'success' && tx.tx_type === 'contract_call')
-                        .map((tx: any) => ({
-                            id: tx.tx_id,
-                            txId: tx.tx_id,
-                            type: tx.contract_call.function_name === 'post-message' ? 'new-post' : 'user-tx',
-                            status: 'success',
-                            timestamp: (tx.burn_block_time || Date.now() / 1000) * 1000,
-                            data: {
-                                message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Posted to Wall',
-                                poster: tx.sender_address,
-                                id: '?'
+                    if (contractTxJson.results) {
+                        const chainEvents = contractTxJson.results
+                            .filter((tx: any) => tx.tx_status === 'success' && tx.tx_type === 'contract_call')
+                            .map((tx: any) => ({
+                                id: tx.tx_id,
+                                txId: tx.tx_id,
+                                type: tx.contract_call.function_name === 'post-message' ? 'new-post' : 'user-tx',
+                                status: 'success',
+                                timestamp: (tx.burn_block_time || Date.now() / 1000) * 1000,
+                                data: {
+                                    message: tx.contract_call.function_args?.[0]?.repr?.replace(/u?"|\\/g, '') || 'Posted to Wall',
+                                    poster: tx.sender_address,
+                                    id: contractId === JACKPOT_CONTRACT ? 'JACKPOT' : 'FREE'
+                                }
+                            }));
+
+                        const seenTxIds = new Set(allEvents.map(e => e.txId || e.id));
+                        chainEvents.forEach((ce: any) => {
+                            if (!seenTxIds.has(ce.id)) {
+                                allEvents.push(ce);
                             }
-                        }));
-
-                    const seenTxIds = new Set(allEvents.map(e => e.txId || e.id));
-                    chainEvents.forEach((ce: any) => {
-                        if (!seenTxIds.has(ce.id)) {
-                            allEvents.push(ce);
-                        }
-                    });
+                        });
+                    }
                 }
             } catch (err) {
                 console.error('Contract TX fallback failed:', err);
@@ -173,7 +180,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
                     if (txJson.results) {
                         const userTxs = txJson.results
-                            .filter((tx: any) => tx.tx_type === 'contract_call' && tx.contract_call.contract_id.includes(CONTRACT_NAME))
+                            .filter((tx: any) => tx.tx_type === 'contract_call' && tx.contract_call.contract_id.includes('jackpot-wall'))
                             .map((tx: any) => ({
                                 id: tx.tx_id,
                                 txId: tx.tx_id,
@@ -233,16 +240,32 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
     const handlePost = async () => {
         if (!message) return;
         setIsLoading(true);
-        console.log('🚀 Triggering transaction...', { contractAddress: CONTRACT_ADDRESS, message });
+
+        const targetContract = enterJackpot ? JACKPOT_CONTRACT : FREE_CONTRACT;
+        const [contractAddress, contractName] = targetContract.split('.');
+
+        console.log('🚀 Triggering transaction...', { contractAddress, contractName, enterJackpot, message });
+
+        const userAddress = getUserAddress();
+
+        // Attach 0.1 STX post-condition only if entering jackpot
+        const postConditions = enterJackpot && userAddress ? [
+            makeStandardSTXPostCondition(
+                userAddress,
+                FungibleConditionCode.Equal,
+                100000n // 0.1 STX (100,000 micro-STX)
+            )
+        ] : [];
 
         try {
             await openContractCall({
-                contractAddress: CONTRACT_ADDRESS,
-                contractName: CONTRACT_NAME,
+                contractAddress,
+                contractName,
                 functionName: 'post-message',
                 functionArgs: [stringUtf8CV(message)],
                 network: CURRENT_NETWORK,
-                postConditionMode: PostConditionMode.Allow,
+                postConditions,
+                postConditionMode: enterJackpot ? PostConditionMode.Deny : PostConditionMode.Allow,
                 appDetails: {
                     name: 'Jackpot Wall',
                     icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
@@ -458,21 +481,37 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             {/* Action Grid */}
                             <div className="grid lg:grid-cols-[1fr_380px] gap-4 lg:gap-8">
                                 <div className="glass-card !bg-white/5 border border-white/10 backdrop-blur-xl p-8 lg:p-10 flex flex-col gap-8 shadow-xl">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-4">
                                             <div className="p-3 rounded-2xl bg-[#5546FF]/10 text-[#5546FF] border border-[#5546FF]/20">
                                                 <MessageSquare className="w-6 h-6" />
                                             </div>
-                                            <h3 className="font-black text-2xl text-white tracking-tight">Post to the Wall</h3>
+                                            <div>
+                                                <h3 className="font-black text-2xl text-white tracking-tight">Post to the Wall</h3>
+                                                <p className="text-xs text-zinc-500">Share your thoughts on the Stacks blockchain</p>
+                                            </div>
                                         </div>
-                                        <p className="text-zinc-500 font-mono text-base font-bold bg-white/5 px-3 py-1 rounded-lg">0.1 STX</p>
+                                        
+                                        {/* Toggle switch for Jackpot mode */}
+                                        <button
+                                            onClick={() => setEnterJackpot(!enterJackpot)}
+                                            className={cn(
+                                                "flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all duration-300 font-bold text-sm shadow-lg",
+                                                enterJackpot 
+                                                    ? "bg-[#5546FF]/20 border-[#5546FF]/50 text-white" 
+                                                    : "bg-white/5 border-white/10 text-zinc-400 hover:text-zinc-300"
+                                            )}
+                                        >
+                                            <Trophy className={cn("w-4 h-4 transition-transform", enterJackpot ? "text-amber-400 scale-110" : "text-zinc-500")} />
+                                            {enterJackpot ? "Jackpot Entry: 0.1 STX" : "Free Posting"}
+                                        </button>
                                     </div>
 
                                     <textarea
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
                                         disabled={isLoading}
-                                        placeholder="Speak your truth to the chain..."
+                                        placeholder={enterJackpot ? "Post your message and enter the 0.1 STX jackpot competition..." : "Post a free message to the wall..."}
                                         className="w-full h-52 bg-black/40 border border-white/10 rounded-3xl p-8 text-zinc-100 placeholder:text-zinc-700 outline-none focus:ring-2 focus:ring-[#5546FF]/50 transition-all resize-none text-xl leading-relaxed shadow-inner"
                                     />
 
@@ -481,10 +520,14 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                         disabled={isLoading || !message}
                                         className={cn(
                                             "w-full py-6 rounded-3xl font-black uppercase tracking-[0.2em] text-sm transition-all shadow-2xl active:scale-[0.98] border border-white/10",
-                                            message ? "bg-[#5546FF] text-white hover:bg-[#4436EE] hover:shadow-[#5546FF]/20" : "bg-zinc-900 text-zinc-600"
+                                            message 
+                                                ? enterJackpot 
+                                                    ? "bg-gradient-to-tr from-[#5546FF] to-[#fc6432] text-white shadow-[#5546FF]/10" 
+                                                    : "bg-[#5546FF] text-white hover:bg-[#4436EE] hover:shadow-[#5546FF]/20" 
+                                                : "bg-zinc-900 text-zinc-600"
                                         )}
                                     >
-                                        {isLoading ? 'Processing...' : 'Post Message'}
+                                        {isLoading ? 'Processing...' : enterJackpot ? 'Enter Jackpot (0.1 STX)' : 'Post Free Message'}
                                     </button>
                                 </div>
 
