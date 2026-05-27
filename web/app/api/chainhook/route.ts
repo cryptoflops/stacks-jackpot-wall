@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import { eventStore } from '@/lib/store';
 
 export async function POST(request: Request) {
-    // 1. Authorization Check (Prevents UI Spoofing)
-    const authHeader = request.headers.get('authorization');
-    const secret = process.env.CHAINHOOK_SECRET || 'secret-token';
-
-    if (authHeader !== `Bearer ${secret}`) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // 1. Authorization Check (only enforced when CHAINHOOK_SECRET is set)
+    const secret = process.env.CHAINHOOK_SECRET;
+    if (secret) {
+        const authHeader = request.headers.get('authorization');
+        if (authHeader !== `Bearer ${secret}`) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
     }
 
     const body = await request.json();
