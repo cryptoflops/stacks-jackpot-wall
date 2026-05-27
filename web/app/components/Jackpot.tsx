@@ -480,29 +480,87 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             {/* Action Grid */}
                             <div className="grid lg:grid-cols-[1fr_380px] gap-4 lg:gap-8">
                                 <div className="glass-card !bg-white/5 border border-white/10 backdrop-blur-xl p-8 lg:p-10 flex flex-col gap-8 shadow-xl">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-3 rounded-2xl bg-[#5546FF]/10 text-[#5546FF] border border-[#5546FF]/20">
-                                                <MessageSquare className="w-6 h-6" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-black text-2xl text-white tracking-tight">Post to the Wall</h3>
-                                                <p className="text-xs text-zinc-500">Share your thoughts on the Stacks blockchain</p>
-                                            </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-2xl bg-[#5546FF]/10 text-[#5546FF] border border-[#5546FF]/20">
+                                            <MessageSquare className="w-6 h-6" />
                                         </div>
-                                        
-                                        {/* Toggle switch for Jackpot mode */}
+                                        <div>
+                                            <h3 className="font-black text-2xl text-white tracking-tight">Post to the Wall</h3>
+                                            <p className="text-xs text-zinc-500">Share your thoughts on the Stacks blockchain</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Choice between Free Post and Jackpot Entry */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Free Posting Card */}
                                         <button
-                                            onClick={() => setEnterJackpot(!enterJackpot)}
+                                            type="button"
+                                            onClick={() => setEnterJackpot(false)}
                                             className={cn(
-                                                "flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all duration-300 font-bold text-sm shadow-lg",
-                                                enterJackpot 
-                                                    ? "bg-[#5546FF]/20 border-[#5546FF]/50 text-white" 
-                                                    : "bg-white/5 border-white/10 text-zinc-400 hover:text-zinc-300"
+                                                "flex flex-col items-start text-left p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group/opt",
+                                                !enterJackpot 
+                                                    ? "bg-white/10 border-white/20 text-white shadow-xl shadow-black/20" 
+                                                    : "bg-white/5 border-white/5 text-zinc-500 hover:bg-white/10 hover:border-white/10 hover:text-zinc-300"
                                             )}
                                         >
-                                            <Trophy className={cn("w-4 h-4 transition-transform", enterJackpot ? "text-amber-400 scale-110" : "text-zinc-500")} />
-                                            {enterJackpot ? "Jackpot Entry: 0.1 STX" : "Free Posting"}
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className={cn(
+                                                    "w-8 h-8 rounded-xl flex items-center justify-center border transition-all",
+                                                    !enterJackpot 
+                                                        ? "bg-white/10 border-white/20 text-white" 
+                                                        : "bg-white/5 border-white/5 text-zinc-500 group-hover/opt:text-zinc-300"
+                                                )}>
+                                                    <MessageSquare className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm">Free Post</p>
+                                                    <p className="text-[10px] text-zinc-500 font-mono">0 STX</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-zinc-400 group-hover/opt:text-zinc-300 transition-colors">
+                                                Post your message to the wall for free. No jackpot pool participation.
+                                            </p>
+                                            {!enterJackpot && (
+                                                <div className="absolute -inset-px border border-white/20 rounded-2xl pointer-events-none" />
+                                            )}
+                                        </button>
+
+                                        {/* Jackpot Entry Card */}
+                                        <button
+                                            type="button"
+                                            onClick={() => setEnterJackpot(true)}
+                                            className={cn(
+                                                "flex flex-col items-start text-left p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group/opt",
+                                                enterJackpot 
+                                                    ? "bg-gradient-to-br from-[#5546FF]/10 via-[#5546FF]/5 to-transparent border-[#5546FF]/30 text-white shadow-xl shadow-[#5546FF]/5" 
+                                                    : "bg-white/5 border-white/5 text-zinc-500 hover:bg-white/10 hover:border-[#5546FF]/20 hover:text-zinc-300"
+                                            )}
+                                        >
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className={cn(
+                                                    "w-8 h-8 rounded-xl flex items-center justify-center border transition-all",
+                                                    enterJackpot 
+                                                        ? "bg-[#5546FF]/20 border-[#5546FF]/30 text-amber-400 animate-pulse" 
+                                                        : "bg-white/5 border-white/5 text-zinc-500 group-hover/opt:text-amber-400/70"
+                                                )}>
+                                                    <Trophy className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <p className="font-bold text-sm">Jackpot Entry</p>
+                                                        <span className="text-[8px] font-black uppercase bg-amber-400/20 text-amber-400 px-1 py-0.5 rounded border border-amber-400/30 tracking-wider">
+                                                            WIN STX
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[10px] text-[#fc6432] font-mono font-bold">0.1 STX</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-zinc-400 group-hover/opt:text-zinc-300 transition-colors">
+                                                Enter the cumulative jackpot pool. Every 10th poster wins 90% of the pot!
+                                            </p>
+                                            {enterJackpot && (
+                                                <div className="absolute -inset-px border border-[#5546FF]/40 rounded-2xl pointer-events-none" />
+                                            )}
                                         </button>
                                     </div>
 
