@@ -17,8 +17,9 @@ export async function POST(request: Request) {
     }
 
     for (const block of body.apply) {
+        if (!block.transactions) continue;
         for (const tx of block.transactions) {
-            if (tx.metadata.success) {
+            if (tx.metadata && tx.metadata.success) {
                 // events is an array inside metadata? No, tx.metadata.receipt.events usually
                 // Chainhook structure is complex.
                 // Let's assume we look for print events in the logs
@@ -27,11 +28,11 @@ export async function POST(request: Request) {
                 const events = tx.metadata.receipt?.events || [];
                 for (const evt of events) {
                     if (evt.type === 'smart_contract_log') { // Print event
-                        const value = evt.data.value; // Hex or parsed?
+                        const value = evt.data?.value; // Hex or parsed?
                         // Dependent on Chainhook settings (decode_values: true normally)
                         // Just push raw for now
                         eventStore.add({
-                            id: tx.transaction_identifier.hash,
+                            id: tx.transaction_identifier?.hash || Date.now().toString(),
                             type: 'new-post', // Generic type, refined by data
                             data: value
                         });

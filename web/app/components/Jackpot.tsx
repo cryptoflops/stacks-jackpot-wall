@@ -65,7 +65,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
     const FREE_CONTRACT = IS_MAINNET
         ? 'SP1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall-v2'
-        : 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7M3CKVJJ.jackpot-wall-v2';
+        : 'ST1TN1ERKXEM2H9TKKWGPGZVNVNEKS92M7MAMP23P.jackpot-wall-v2';
 
     const CURRENT_NETWORK = IS_MAINNET ? STACKS_MAINNET : STACKS_TESTNET;
 
