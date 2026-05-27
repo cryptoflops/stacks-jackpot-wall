@@ -417,7 +417,8 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                         <div className="p-4 rounded-2xl bg-black/60 border border-white/10 text-[10px] font-mono text-zinc-400 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4">
                             <p className="font-black text-[#5546FF] mb-2 uppercase border-b border-white/5 pb-2">Diagnostic Data</p>
                             <p>NETWORK: {process.env.NEXT_PUBLIC_NETWORK || 'testnet'}</p>
-                            <p className="break-all">CONTRACT: {CONTRACT_ADDRESS}</p>
+                            <p className="break-all">JACKPOT CONTRACT: {JACKPOT_CONTRACT}</p>
+                            <p className="break-all">FREE CONTRACT: {FREE_CONTRACT}</p>
                             <p className="text-white mt-2">POT: {(potBalance / 1000000).toFixed(2)} STX</p>
                             <p className="text-white">COUNT: {postCount}</p>
                         </div>
