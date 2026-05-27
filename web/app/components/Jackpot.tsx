@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useConnect } from '@stacks/connect-react';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { openContractCall } from '@stacks/connect';
-import { uintCV, stringUtf8CV, cvToJSON, fetchCallReadOnlyFunction, PostConditionMode, makeStandardSTXPostCondition, FungibleConditionCode } from '@stacks/transactions';
+import { uintCV, stringUtf8CV, cvToJSON, fetchCallReadOnlyFunction, PostConditionMode, Pc } from '@stacks/transactions';
 import { userSession } from '@/lib/stacks';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -250,11 +250,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
         // Attach 0.1 STX post-condition only if entering jackpot
         const postConditions = enterJackpot && userAddress ? [
-            makeStandardSTXPostCondition(
-                userAddress,
-                FungibleConditionCode.Equal,
-                100000n // 0.1 STX (100,000 micro-STX)
-            )
+            Pc.principal(userAddress)
+                .willSendEq(100000)
+                .ustx()
         ] : [];
 
         try {
