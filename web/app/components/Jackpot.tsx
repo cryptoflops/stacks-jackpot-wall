@@ -251,7 +251,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
         // Attach 0.1 STX post-condition only if entering jackpot
         const postConditions = enterJackpot && userAddress ? [
             Pc.principal(userAddress)
-                .willSendEq(100000)
+                .willSendLte(100000)
                 .ustx()
         ] : [];
 
@@ -263,7 +263,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                 functionArgs: [stringUtf8CV(message)],
                 network: CURRENT_NETWORK,
                 postConditions,
-                postConditionMode: enterJackpot ? PostConditionMode.Deny : PostConditionMode.Allow,
+                postConditionMode: PostConditionMode.Allow,
                 appDetails: {
                     name: 'Jackpot Wall',
                     icon: typeof window !== 'undefined' ? window.location.origin + '/favicon.ico' : '',
