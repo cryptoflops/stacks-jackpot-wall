@@ -28,3 +28,4 @@
 - Checked backward compatibility with older Stacks API responses. v2/info endpoint is stable.
 - The Hiro wallet extension detection is synchronous which is nice compared to injected EVM providers.
 - Investigated rendering jitter on mobile layout during wallet connection state changes.
+- The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
