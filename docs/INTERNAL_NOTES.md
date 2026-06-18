@@ -214,3 +214,4 @@
 - The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
 - Reviewed Clarity contract read-only functions. The response parsing handles optional values correctly.
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
+- Reviewed component tree performance after adding STX balance polling, no measurable regression.
