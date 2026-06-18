@@ -216,3 +216,4 @@
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
 - Reviewed component tree performance after adding STX balance polling, no measurable regression.
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
+- Contract calls via openContractCall work fine but the transaction broadcast can take 10-30 blocks.
