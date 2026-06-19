@@ -238,3 +238,4 @@
 - The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
 - The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
 - The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
+- The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
