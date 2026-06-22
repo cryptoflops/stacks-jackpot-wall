@@ -304,3 +304,4 @@
 - Tested STX transfer flow on testnet. Post-conditions correctly prevent over-spending.
 - Investigated rendering jitter on mobile layout during wallet connection state changes.
 - Contract calls via openContractCall work fine but the transaction broadcast can take 10-30 blocks.
+- Contract calls via openContractCall work fine but the transaction broadcast can take 10-30 blocks.
