@@ -641,3 +641,4 @@
 - Reviewed Clarity contract read-only functions. The response parsing handles optional values correctly.
 - Checked backward compatibility with older Stacks API responses. v2/info endpoint is stable.
 - The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
+- The Hiro wallet extension detection is synchronous which is nice compared to injected EVM providers.
