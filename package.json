@@ -27,7 +27,7 @@
     "body-parser": "^2.2.1",
     "chokidar-cli": "^3.0.0",
     "express": "^5.2.1",
-    "vitest": "^4.0.7",
+    "vitest": "^4.1.9",
     "vitest-environment-clarinet": "^3.0.0"
   },
   "devDependencies": {
