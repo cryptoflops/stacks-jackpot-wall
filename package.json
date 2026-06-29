@@ -20,7 +20,7 @@
   "author": "Stacks Builder",
   "license": "MIT",
   "dependencies": {
-    "@hirosystems/chainhooks-client": "^1.0.0",
+    "@hirosystems/chainhooks-client": "^2.1.1",
     "@stacks/clarinet-sdk": "^3.9.0",
     "@stacks/connect": "^8.2.6",
     "@stacks/transactions": "^7.2.0",
