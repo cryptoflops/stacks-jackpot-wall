@@ -769,3 +769,4 @@
 - Reviewed component tree performance after adding STX balance polling, no measurable regression.
 - Investigated rendering jitter on mobile layout during wallet connection state changes.
 - Tested STX transfer flow on testnet. Post-conditions correctly prevent over-spending.
+- Investigated rendering jitter on mobile layout during wallet connection state changes.
