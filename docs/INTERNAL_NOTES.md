@@ -830,3 +830,4 @@
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
 - Tested STX transfer flow on testnet. Post-conditions correctly prevent over-spending.
 - Reviewed component tree performance after adding STX balance polling, no measurable regression.
+- Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
