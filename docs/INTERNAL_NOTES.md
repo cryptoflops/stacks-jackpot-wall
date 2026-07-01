@@ -855,3 +855,4 @@
 - Reviewed component tree performance after adding STX balance polling, no measurable regression.
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
 - The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
+- Contract calls via openContractCall work fine but the transaction broadcast can take 10-30 blocks.
