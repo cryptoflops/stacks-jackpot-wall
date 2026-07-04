@@ -1020,3 +1020,4 @@
 - Investigated rendering jitter on mobile layout during wallet connection state changes.
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
+- Tested STX transfer flow on testnet. Post-conditions correctly prevent over-spending.
