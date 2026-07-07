@@ -1159,3 +1159,4 @@
 - Reviewed component tree performance after adding STX balance polling, no measurable regression.
 - Checked backward compatibility with older Stacks API responses. v2/info endpoint is stable.
 - Tested STX transfer flow on testnet. Post-conditions correctly prevent over-spending.
+- Noticed the useStxBalance hook refetches too aggressively. Consider adding a 30s polling interval.
