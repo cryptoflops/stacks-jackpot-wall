@@ -1148,3 +1148,4 @@
 - The wallet connection flow via @stacks/connect works well on desktop but needs mobile fallback.
 - Checked backward compatibility with older Stacks API responses. v2/info endpoint is stable.
 - Tested the NFT minting flow on Stacks testnet. Metadata pinning to IPFS is reliable.
+- Reviewed Clarity contract read-only functions. The response parsing handles optional values correctly.
