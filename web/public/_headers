@@ -1,0 +1,8 @@
+# Prevent HTML caching issues between deployments
+# Next.js static assets already have content hashes for cache busting
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML pages - short cache to prevent stale chunk references
+/*
+  Cache-Control: public, s-maxage=60, stale-while-revalidate=300
