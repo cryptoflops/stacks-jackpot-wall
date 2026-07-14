@@ -26,8 +26,12 @@
   --radius: 1rem;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  @apply bg-[#020203] text-zinc-100 antialiased;
+  @apply bg-[#060609] text-zinc-100 antialiased;
   background-image:
     radial-gradient(at 0% 0%, hsla(245, 100%, 10%, 1) 0, transparent 50%),
     radial-gradient(at 50% 0%, hsla(245, 100%, 64%, 0.08) 0, transparent 50%),
@@ -37,7 +41,8 @@ body {
 
 @layer components {
   .glass {
-    @apply bg-zinc-900/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+    @apply bg-zinc-900/40 backdrop-blur-xl border border-white/5;
+    box-shadow: 0 25px 50px -12px rgba(85, 70, 255, 0.08);
   }
 
   .glass-card {

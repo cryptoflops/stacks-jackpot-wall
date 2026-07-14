@@ -336,7 +336,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             <aside className="flex flex-col gap-4 lg:gap-6 lg:h-[calc(100vh-100px)] lg:sticky lg:top-12">
                 <button
                     onClick={onBackToLanding}
-                    className="flex items-center gap-4 px-2 hover:opacity-80 transition-all text-left group"
+                    className="flex items-center gap-4 px-2 hover:opacity-80 transition-all text-left group active:scale-[0.98]"
                 >
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#5546FF] to-[#fc6432] flex items-center justify-center shadow-lg shadow-[#5546FF]/20 group-hover:scale-105 transition-transform duration-300">
                         <Zap className="w-6 h-6 text-white fill-current" />
@@ -356,7 +356,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                     <button
                         onClick={() => setActiveTab('board')}
                         className={cn(
-                            "flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold tracking-tight shrink-0",
+                            "flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold tracking-tight shrink-0 active:scale-[0.98]",
                             activeTab === 'board' ? "bg-white/10 text-white border border-white/10 shadow-xl" : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
                         )}
                     >
@@ -366,7 +366,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                     <button
                         onClick={() => setActiveTab('history')}
                         className={cn(
-                            "flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold tracking-tight shrink-0",
+                            "flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold tracking-tight shrink-0 active:scale-[0.98]",
                             activeTab === 'history' ? "bg-white/10 text-white border border-white/10 shadow-xl" : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
                         )}
                     >
@@ -399,7 +399,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                         </div>
                         <button
                             onClick={() => { userSession.signUserOut(); window.location.reload(); }}
-                            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[10px] font-black text-zinc-400 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5 uppercase tracking-widest"
+                            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[10px] font-black text-zinc-400 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5 uppercase tracking-widest active:scale-[0.98]"
                         >
                             <LogOut className="w-3.5 h-3.5" />
                             Disconnect
@@ -408,7 +408,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
                     <button
                         onClick={() => setShowDebug(!showDebug)}
-                        className="text-[10px] text-zinc-600 hover:text-zinc-400 font-bold text-center uppercase tracking-widest"
+                        className="text-[10px] text-zinc-600 hover:text-zinc-400 font-bold text-center uppercase tracking-widest transition-all active:scale-[0.98]"
                     >
                         {showDebug ? 'Hide Inspector' : 'System Inspector'}
                     </button>
@@ -443,7 +443,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
                                 <button
                                     onClick={refreshData}
-                                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 transition-all text-zinc-500 hover:text-white"
+                                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 transition-all text-zinc-500 hover:text-white active:scale-[0.98]"
                                 >
                                     <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin text-[#5546FF]")} />
                                 </button>
@@ -455,7 +455,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
                                 <div className="flex flex-col gap-2 z-10">
                                     <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#5546FF] animate-pulse">Cumulative Jackpot</p>
-                                    <h2 className="text-5xl lg:text-8xl font-black tracking-tighter text-white">
+                                    <h2 className="text-5xl lg:text-8xl font-black tracking-tighter text-white tabular-nums">
                                         {(potBalance / 1000000).toFixed(2)} <span className="text-xl lg:text-3xl text-zinc-600 font-bold -ml-2">STX</span>
                                     </h2>
                                 </div>
@@ -497,9 +497,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                             type="button"
                                             onClick={() => setEnterJackpot(false)}
                                             className={cn(
-                                                "flex flex-col items-start text-left p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group/opt",
+                                                "flex flex-col items-start text-left p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group/opt active:scale-[0.98]",
                                                 !enterJackpot 
-                                                    ? "bg-white/10 border-white/20 text-white shadow-xl shadow-black/20" 
+                                                    ? "bg-white/10 border-white/20 text-white shadow-xl shadow-[#5546FF]/10" 
                                                     : "bg-white/5 border-white/5 text-zinc-500 hover:bg-white/10 hover:border-white/10 hover:text-zinc-300"
                                             )}
                                         >
@@ -530,7 +530,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                             type="button"
                                             onClick={() => setEnterJackpot(true)}
                                             className={cn(
-                                                "flex flex-col items-start text-left p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group/opt",
+                                                "flex flex-col items-start text-left p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group/opt active:scale-[0.98]",
                                                 enterJackpot 
                                                     ? "bg-gradient-to-br from-[#5546FF]/10 via-[#5546FF]/5 to-transparent border-[#5546FF]/30 text-white shadow-xl shadow-[#5546FF]/5" 
                                                     : "bg-white/5 border-white/5 text-zinc-500 hover:bg-white/10 hover:border-[#5546FF]/20 hover:text-zinc-300"
@@ -578,7 +578,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                         onClick={handlePost}
                                         disabled={isLoading || !message}
                                         className={cn(
-                                            "w-full py-6 rounded-3xl font-black uppercase tracking-[0.2em] text-sm transition-all shadow-2xl active:scale-[0.98] border border-white/10",
+                                            "w-full py-6 rounded-3xl font-black uppercase tracking-[0.2em] text-sm transition-all shadow-2xl active:scale-[0.98] border border-white/10 disabled:cursor-not-allowed disabled:opacity-80",
                                             message 
                                                 ? enterJackpot 
                                                     ? "bg-gradient-to-tr from-[#5546FF] to-[#fc6432] text-white shadow-[#5546FF]/10" 
@@ -586,11 +586,17 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                 : "bg-zinc-900 text-zinc-600"
                                         )}
                                     >
-                                        {isLoading ? 'Processing...' : enterJackpot ? 'Enter Jackpot (0.1 STX)' : 'Post Free Message'}
+                                        {isLoading ? (
+                                            <span className="animate-pulse">Processing transaction...</span>
+                                        ) : enterJackpot ? (
+                                            'Enter Jackpot (0.1 STX)'
+                                        ) : (
+                                            'Post Free Message'
+                                        )}
                                     </button>
                                 </div>
 
-                                <div className="glass-card !bg-white/5 border border-white/10 p-6 lg:p-8 flex flex-col gap-6 h-[400px] lg:h-[500px]">
+                                <section className="glass-card !bg-white/5 border border-white/10 p-6 lg:p-8 flex flex-col gap-6 h-[400px] lg:h-[500px]">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
@@ -605,7 +611,13 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                             {events.length === 0 ? (
                                                 <div className="text-center py-20">
                                                     <p className="text-zinc-600 text-sm">No activity yet.</p>
-                                                    <p className="text-zinc-700 text-xs mt-1">Be the first to post on the wall.</p>
+                                                    <p className="text-zinc-700 text-xs mt-1 mb-4">Be the first to post on the wall.</p>
+                                                    <button
+                                                        onClick={() => document.getElementById('message-input')?.focus()}
+                                                        className="text-xs text-[#5546FF] hover:text-[#7B6FFF] transition-colors font-semibold"
+                                                    >
+                                                        Write a message &rarr;
+                                                    </button>
                                                 </div>
                                             ) : (
                                                 events.map((evt, i) => (
@@ -613,7 +625,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                         key={evt.id || i}
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
-                                                        className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group/item shadow-lg"
+                                                        className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group/item shadow-[0_4px_24px_rgba(85,70,255,0.06)] active:scale-[0.98]"
                                                     >
                                                         <div className="flex justify-between items-start mb-3">
                                                             <div className="flex items-center gap-2">
@@ -651,7 +663,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                             )}
                                         </AnimatePresence>
                                     </div>
-                                </div>
+                                </section>
                             </div>
                         </motion.div>
                     ) : (
@@ -681,7 +693,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                             href={getExplorerUrl(evt.txId || evt.id) || '#'}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="group p-6 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all flex flex-col gap-3 relative overflow-hidden"
+                                            className="group p-6 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all flex flex-col gap-3 relative overflow-hidden active:scale-[0.98]"
                                         >
                                             <div className="flex justify-between items-start">
                                                 <div className="flex items-center gap-2">

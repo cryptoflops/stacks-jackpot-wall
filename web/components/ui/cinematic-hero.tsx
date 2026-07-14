@@ -305,7 +305,7 @@ export function CinematicHero({
 
       {/* BACKGROUND LAYER: Hero Texts */}
       <div className="hero-text-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4 will-change-transform transform-style-3d">
-        <h1 className="text-track gsap-reveal text-3d-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tight mb-2">
+        <h1 className="text-track gsap-reveal text-3d-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tighter mb-2">
           {tagline1}
         </h1>
         <h1 className="text-days gsap-reveal text-silver-matte text-5xl md:text-7xl lg:text-[6rem] font-extrabold tracking-tighter">
@@ -368,7 +368,7 @@ export function CinematicHero({
             
             {/* 1. TOP (Mobile) / RIGHT (Desktop): BRAND NAME */}
             <div className="card-right-text gsap-reveal order-1 lg:order-3 flex justify-center lg:justify-end z-20 w-full">
-              <h2 className="text-4xl md:text-[5rem] lg:text-[7rem] font-black uppercase tracking-tighter text-card-silver-matte lg:mt-0 leading-[0.85]">
+              <h2 className="text-4xl md:text-[5rem] lg:text-[7rem] font-black uppercase tracking-[-0.03em] text-card-silver-matte lg:mt-0 leading-[0.85]" style={{ textWrap: "balance" }}>
                 {brandName}
               </h2>
             </div>

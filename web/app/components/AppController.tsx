@@ -35,14 +35,14 @@ export default function AppController() {
 
     if (isConnected === null) {
         return (
-            <div className="min-h-screen bg-[#020203] flex items-center justify-center">
+                <main className="min-h-dvh bg-[#060609] flex items-center justify-center">
                 <div className="text-zinc-600 text-sm">Loading...</div>
-            </div>
+            </main>
         );
     }
 
     return (isConnected && view === 'dashboard') ? (
-        <div className="min-h-screen py-8 lg:py-12 relative overflow-hidden">
+        <div className="min-h-dvh py-8 lg:py-12 relative overflow-hidden">
             {/* Background for Dashboard (Subtle variant) */}
             <div className="fixed inset-0 -z-10 bg-[#020108] opacity-40" />
             <Jackpot onBackToLanding={() => setView('landing')} />

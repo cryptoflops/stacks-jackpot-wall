@@ -10,7 +10,7 @@ interface LandingProps {
 
 export default function Landing({ onConnect }: LandingProps) {
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-[#020108]">
+        <div className="relative min-h-dvh overflow-x-hidden bg-[#020108]">
             <CinematicHero
                 brandName="JACKPOT WALL"
                 tagline1="Post on-chain,"
