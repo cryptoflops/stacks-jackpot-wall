@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Footer from './Footer';
+import JackpotWaveCard from '@/components/ui/jackpot-wave-card';
 
 // Types
 interface FeedEvent {
@@ -437,45 +438,14 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             exit={{ opacity: 0, x: -20 }}
                             className="flex flex-col gap-8"
                         >
-                            {/* Jackpot Card */}
-                            <section className="relative overflow-hidden glass-card p-8 lg:p-16 flex flex-col items-center justify-center text-center gap-8 lg:gap-10 group !bg-white/5 border border-white/10 backdrop-blur-3xl shadow-[0_0_100px_rgba(85,70,255,0.05)]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-[#5546FF]/10 via-transparent to-[#fc6432]/10 pointer-events-none" />
-
-                                <button
-                                    onClick={refreshData}
-                                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 transition-all text-zinc-500 hover:text-white active:scale-[0.98]"
-                                >
-                                    <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin text-[#5546FF]")} />
-                                </button>
-
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-[#5546FF]/30 blur-[60px] lg:blur-[100px] rounded-full animate-pulse" />
-                                    <Trophy className="w-16 lg:w-24 h-16 lg:h-24 text-amber-300 relative z-10 drop-shadow-[0_0_30px_rgba(252,211,77,0.3)]" />
-                                </div>
-
-                                <div className="flex flex-col gap-2 z-10">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#5546FF] animate-pulse">Cumulative Jackpot</p>
-                                    <h2 className="text-5xl lg:text-8xl font-black tracking-tighter text-white tabular-nums">
-                                        {(potBalance / 1000000).toFixed(2)} <span className="text-xl lg:text-3xl text-zinc-600 font-bold -ml-2">STX</span>
-                                    </h2>
-                                </div>
-
-                                <div className="flex flex-col items-center gap-4 w-full max-w-sm z-10">
-                                    <div className="flex justify-between w-full text-[10px] font-black uppercase text-zinc-500 tracking-widest">
-                                        <span>Next Trigger Progress</span>
-                                        <span className="text-[#5546FF]">{postCount % 10}/10 Posts</span>
-                                    </div>
-                                    <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/10 p-0.5">
-                                        <motion.div
-                                            className="h-full bg-gradient-to-r from-[#5546FF] to-[#fc6432] rounded-full"
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${(postCount % 10) * 10}%` }}
-                                            transition={{ duration: 2, ease: "easeOut" }}
-                                        />
-                                    </div>
-                                    <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Next payout at post #{(Math.floor(postCount / 10) + 1) * 10}</p>
-                                </div>
-                            </section>
+                            {/* Jackpot Card — Animated Wave Visualizer */}
+                            <JackpotWaveCard
+                                amount={potBalance / 1000000}
+                                postsUntilJackpot={10 - (postCount % 10)}
+                                postsPerJackpot={10}
+                                onRefresh={refreshData}
+                                isLoading={isLoading}
+                            />
 
                             {/* Action Grid */}
                             <div className="grid lg:grid-cols-[1fr_380px] gap-4 lg:gap-8">
