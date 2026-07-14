@@ -564,7 +564,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                         </button>
                                     </div>
 
+                                    <label htmlFor="message-input" className="sr-only">Your message</label>
                                     <textarea
+                                        id="message-input"
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
                                         disabled={isLoading}
@@ -601,7 +603,10 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                     <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
                                         <AnimatePresence>
                                             {events.length === 0 ? (
-                                                <p className="text-zinc-600 text-center py-20 text-xs font-bold uppercase tracking-widest">No activity yet</p>
+                                                <div className="text-center py-20">
+                                                    <p className="text-zinc-600 text-sm">No activity yet.</p>
+                                                    <p className="text-zinc-700 text-xs mt-1">Be the first to post on the wall.</p>
+                                                </div>
                                             ) : (
                                                 events.map((evt, i) => (
                                                     <motion.div
@@ -663,7 +668,12 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             </h2>
                             <div className="grid gap-4">
                                 {filteredEvents.length === 0 ? (
-                                    <p className="text-zinc-600 text-center py-40 font-bold uppercase tracking-widest">No personal history</p>
+                                    <div className="text-center py-40">
+                                        <p className="text-zinc-600 text-sm">No personal history yet.</p>
+                                        <button onClick={() => setActiveTab('board')} className="mt-2 text-sm text-[#5546FF] hover:text-[#7B6FFF] transition-colors">
+                                            Post your first message →
+                                        </button>
+                                    </div>
                                 ) : (
                                     filteredEvents.map((evt, i) => (
                                         <a

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -101,6 +101,18 @@ function AuroraMaterial() {
 }
 
 export default function WebGLBackground() {
+    const [reduceMotion, setReduceMotion] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            setReduceMotion(true);
+        }
+    }, []);
+
+    if (reduceMotion) {
+        return <div className="fixed inset-0 -z-10 bg-[#020108] w-full h-full" />;
+    }
+
     return (
         <div className="fixed inset-0 -z-10 bg-[#020108] w-full h-full overflow-hidden">
             <Canvas gl={{ antialias: false, stencil: false, depth: false }} dpr={[1, 2]}>

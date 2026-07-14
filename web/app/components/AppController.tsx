@@ -33,7 +33,13 @@ export default function AppController() {
         }
     };
 
-    if (isConnected === null) return null; // Loading state
+    if (isConnected === null) {
+        return (
+            <div className="min-h-screen bg-[#020203] flex items-center justify-center">
+                <div className="text-zinc-600 text-sm">Loading...</div>
+            </div>
+        );
+    }
 
     return (isConnected && view === 'dashboard') ? (
         <div className="min-h-screen py-8 lg:py-12 relative overflow-hidden">
