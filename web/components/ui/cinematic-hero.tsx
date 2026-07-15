@@ -120,7 +120,7 @@ export function CinematicHero({
         <p className="text-zinc-400 text-lg md:text-xl mb-12 max-w-xl mx-auto font-light leading-relaxed">
           {ctaDescription}
         </p>
-        <div className="flex flex-col sm:flex-row gap-6">
+        <div className="flex justify-center">
           <button
             onClick={onConnect}
             aria-label="Connect your Stacks wallet"
@@ -135,20 +135,6 @@ export function CinematicHero({
             <div className="text-left">
               <div className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase mb-[-2px]">Stacks</div>
               <div className="text-xl font-bold leading-none tracking-tight">Connect Wallet</div>
-            </div>
-          </button>
-          <button
-            onClick={onConnect}
-            aria-label="Enter the Jackpot Wall"
-            className="btn-modern-dark flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#5546FF] focus:ring-offset-2 focus:ring-offset-[#020108]"
-          >
-            <svg className="w-7 h-7 transition-transform group-hover:scale-105" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 9l6 6 6-6" />
-              <rect x="4" y="3" width="16" height="18" rx="2" />
-            </svg>
-            <div className="text-left">
-              <div className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase mb-[-2px]">Jackpot</div>
-              <div className="text-xl font-bold leading-none tracking-tight">Enter Wall</div>
             </div>
           </button>
         </div>
