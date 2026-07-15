@@ -102,9 +102,9 @@ export function CinematicHero({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=4000",
-          pin: true,
-          scrub: 1,
+          end: "+=400",
+          pin: false,
+          scrub: 0.5,
           anticipatePin: 1,
         },
       });
