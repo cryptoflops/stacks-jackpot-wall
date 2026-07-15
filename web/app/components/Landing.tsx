@@ -1,11 +1,14 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { CinematicHero } from '@/components/ui/cinematic-hero';
 import HowItWorks from '@/components/landing/HowItWorks';
 import LiveStats from '@/components/landing/LiveStats';
 import RecentActivity from '@/components/landing/RecentActivity';
 import Footer from './Footer';
+
+const WebGLBackground = dynamic(() => import('./WebGLBackground'), { ssr: false });
 
 interface LandingProps {
     onConnect: () => void;
@@ -14,6 +17,7 @@ interface LandingProps {
 export default function Landing({ onConnect }: LandingProps) {
     return (
         <div className="relative min-h-dvh overflow-x-hidden bg-background">
+            <WebGLBackground />
             <CinematicHero
                 brandName="JACKPOT WALL"
                 tagline1="Post on-chain,"
