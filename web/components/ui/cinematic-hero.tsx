@@ -4,158 +4,11 @@ import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
+import { Crosshair, Coins } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-
-const INJECTED_STYLES = `
-  .gsap-reveal { visibility: hidden; }
-
-  /* Environment Overlays */
-  .film-grain {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 50; opacity: 0.04; mix-blend-mode: overlay;
-      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
-  }
-
-  .bg-grid-theme {
-      background-size: 60px 60px;
-      background-image: 
-          linear-gradient(to right, rgba(85, 70, 255, 0.05) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(85, 70, 255, 0.05) 1px, transparent 1px);
-      mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
-      -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
-  }
-
-  /* Physical text effects */
-  .text-3d-matte {
-      color: #ffffff;
-      text-shadow: 0 10px 30px rgba(85, 70, 255, 0.3), 0 2px 4px rgba(255, 255, 255, 0.1);
-  }
-
-  .text-silver-matte {
-      background: linear-gradient(180deg, #FFFFFF 0%, rgba(255,255,255,0.5) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      transform: translateZ(0);
-      filter: drop-shadow(0px 10px 20px rgba(85, 70, 255, 0.2)) drop-shadow(0px 2px 4px rgba(255,255,255,0.15));
-  }
-
-  .text-card-silver-matte {
-      background: linear-gradient(180deg, #FFFFFF 0%, #A1A1AA 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      transform: translateZ(0);
-      filter: drop-shadow(0px 12px 24px rgba(0,0,0,0.8)) drop-shadow(0px 4px 8px rgba(0,0,0,0.6));
-  }
-
-  /* Deep Physical Card with Dynamic Mouse Lighting */
-  .premium-depth-card {
-      background: linear-gradient(145deg, #1B1054 0%, #0A0A1A 100%);
-      box-shadow: 
-          0 40px 100px -20px rgba(0, 0, 0, 0.9),
-          0 20px 40px -20px rgba(0, 0, 0, 0.8),
-          inset 0 1px 2px rgba(85, 70, 255, 0.2),
-          inset 0 -2px 4px rgba(0, 0, 0, 0.8);
-      border: 1px solid rgba(85, 70, 255, 0.08);
-      position: relative;
-  }
-
-  .card-sheen {
-      position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 50;
-      background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(85, 70, 255, 0.08) 0%, transparent 40%);
-      mix-blend-mode: screen; transition: opacity 0.3s ease;
-  }
-
-  /* Crypto Dashboard Mockup */
-  .jackpot-bezel {
-      background-color: #111;
-      box-shadow: 
-          inset 0 0 0 2px #52525B, 
-          inset 0 0 0 7px #000, 
-          0 40px 80px -15px rgba(0,0,0,0.9),
-          0 15px 25px -5px rgba(0,0,0,0.7);
-      transform-style: preserve-3d;
-  }
-
-  .hardware-btn {
-      background: linear-gradient(90deg, #404040 0%, #171717 100%);
-      box-shadow: 
-          -2px 0 5px rgba(0,0,0,0.8),
-          inset -1px 0 1px rgba(255,255,255,0.15),
-          inset 1px 0 2px rgba(0,0,0,0.8);
-      border-left: 1px solid rgba(255,255,255,0.05);
-  }
-  
-  .screen-glare {
-      background: linear-gradient(110deg, rgba(85, 70, 255, 0.06) 0%, rgba(255,255,255,0) 45%);
-  }
-
-  .widget-depth {
-      background: linear-gradient(180deg, rgba(85, 70, 255, 0.06) 0%, rgba(85, 70, 255, 0.01) 100%);
-      box-shadow: 
-          0 10px 20px rgba(0,0,0,0.3),
-          inset 0 1px 1px rgba(85, 70, 255, 0.08),
-          inset 0 -1px 1px rgba(0,0,0,0.5);
-      border: 1px solid rgba(85, 70, 255, 0.06);
-  }
-
-  .floating-ui-badge {
-      background: linear-gradient(135deg, rgba(85, 70, 255, 0.12) 0%, rgba(85, 70, 255, 0.02) 100%);
-      backdrop-filter: blur(24px); 
-      -webkit-backdrop-filter: blur(24px);
-      box-shadow: 
-          0 0 0 1px rgba(85, 70, 255, 0.15),
-          0 25px 50px -12px rgba(0, 0, 0, 0.8),
-          inset 0 1px 1px rgba(85, 70, 255, 0.3),
-          inset 0 -1px 1px rgba(0,0,0,0.5);
-  }
-
-  /* Physical Tactile Buttons */
-  .btn-modern-light, .btn-modern-dark {
-      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  }
-  .btn-modern-light {
-      background: linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%);
-      color: #0F172A;
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.1), 0 12px 24px -4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,1), inset 0 -3px 6px rgba(0,0,0,0.06);
-  }
-  .btn-modern-light:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 6px 12px -2px rgba(0,0,0,0.15), 0 20px 32px -6px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,1), inset 0 -3px 6px rgba(0,0,0,0.06);
-  }
-  .btn-modern-light:active {
-      transform: translateY(1px);
-      background: linear-gradient(180deg, #F1F5F9 0%, #E2E8F0 100%);
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.1), inset 0 3px 6px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(0,0,0,0.02);
-  }
-  .btn-modern-dark {
-      background: linear-gradient(180deg, #27272A 0%, #18181B 100%);
-      color: #FFFFFF;
-      box-shadow: 0 0 0 1px rgba(85, 70, 255, 0.15), 0 2px 4px rgba(0,0,0,0.6), 0 12px 24px -4px rgba(0,0,0,0.9), inset 0 1px 1px rgba(85, 70, 255, 0.2), inset 0 -3px 6px rgba(0,0,0,0.8);
-  }
-  .btn-modern-dark:hover {
-      transform: translateY(-3px);
-      background: linear-gradient(180deg, #3F3F46 0%, #27272A 100%);
-      box-shadow: 0 0 0 1px rgba(85, 70, 255, 0.2), 0 6px 12px -2px rgba(0,0,0,0.7), 0 20px 32px -6px rgba(0,0,0,1), inset 0 1px 1px rgba(85, 70, 255, 0.25), inset 0 -3px 6px rgba(0,0,0,0.8);
-  }
-  .btn-modern-dark:active {
-      transform: translateY(1px);
-      background: #18181B;
-      box-shadow: 0 0 0 1px rgba(85, 70, 255, 0.08), inset 0 3px 8px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(0,0,0,0.5);
-  }
-
-  .progress-ring {
-      transform: rotate(-90deg);
-      transform-origin: center;
-      stroke-dasharray: 402;
-      stroke-dashoffset: 402;
-      stroke-linecap: round;
-  }
-`;
 
 export interface CinematicHeroProps extends React.HTMLAttributes<HTMLDivElement> {
   brandName?: string;
@@ -249,7 +102,7 @@ export function CinematicHero({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=7000",
+          end: "+=4000",
           pin: true,
           scrub: 1,
           anticipatePin: 1,
@@ -295,11 +148,10 @@ export function CinematicHero({
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-[#020108] text-white font-sans antialiased", className)}
+      className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-[#060609] text-white font-sans antialiased", className)}
       style={{ perspective: "1500px" }}
       {...props}
     >
-      <style dangerouslySetInnerHTML={{ __html: INJECTED_STYLES }} />
       <div className="film-grain" aria-hidden="true" />
       <div className="bg-grid-theme absolute inset-0 z-0 pointer-events-none opacity-50" aria-hidden="true" />
 
@@ -390,7 +242,7 @@ export function CinematicHero({
                   <div className="absolute top-[170px] -right-[3px] w-[3px] h-[70px] hardware-btn rounded-r-md z-0 scale-x-[-1]" aria-hidden="true" />
 
                   {/* Screen */}
-                  <div className="absolute inset-[7px] bg-[#020108] rounded-[2.5rem] overflow-hidden shadow-[inset_0_0_15px_rgba(0,0,0,1)] text-white z-10">
+                  <div className="absolute inset-[7px] bg-[#060609] rounded-[2.5rem] overflow-hidden shadow-[inset_0_0_15px_rgba(0,0,0,1)] text-white z-10">
                     <div className="absolute inset-0 screen-glare z-40 pointer-events-none" aria-hidden="true" />
 
                     {/* Dynamic Island */}
@@ -454,7 +306,7 @@ export function CinematicHero({
                 {/* Floating Glass Badges */}
                 <div className="floating-badge absolute flex top-6 lg:top-12 left-[-15px] lg:left-[-80px] floating-ui-badge rounded-xl lg:rounded-2xl p-3 lg:p-4 items-center gap-3 lg:gap-4 z-30">
                   <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-b from-[#5546FF]/30 to-[#5546FF]/10 flex items-center justify-center border border-[#5546FF]/30 shadow-inner">
-                    <span className="text-base lg:text-xl drop-shadow-lg" aria-hidden="true">🎯</span>
+                    <Crosshair className="w-4 h-4 lg:w-5 lg:h-5 drop-shadow-lg" aria-hidden="true" />
                   </div>
                   <div>
                     <p className="text-white text-xs lg:text-sm font-bold tracking-tight">10th Poster Wins</p>
@@ -464,7 +316,7 @@ export function CinematicHero({
 
                 <div className="floating-badge absolute flex bottom-12 lg:bottom-20 right-[-15px] lg:right-[-80px] floating-ui-badge rounded-xl lg:rounded-2xl p-3 lg:p-4 items-center gap-3 lg:gap-4 z-30">
                   <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-b from-[#fc6432]/30 to-[#fc6432]/10 flex items-center justify-center border border-[#fc6432]/30 shadow-inner">
-                    <span className="text-base lg:text-lg drop-shadow-lg" aria-hidden="true">💰</span>
+                    <Coins className="w-4 h-4 lg:w-5 lg:h-5 drop-shadow-lg" aria-hidden="true" />
                   </div>
                   <div>
                     <p className="text-white text-xs lg:text-sm font-bold tracking-tight">0.1 STX Entry</p>

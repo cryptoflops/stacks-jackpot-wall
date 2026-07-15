@@ -5,6 +5,7 @@ import { userSession } from '@/lib/stacks';
 import Landing from './Landing';
 import Jackpot from './Jackpot';
 import { useConnect } from '@stacks/connect-react';
+import { Zap } from 'lucide-react';
 
 export default function AppController() {
     const [isConnected, setIsConnected] = useState<boolean | null>(null);
@@ -35,8 +36,13 @@ export default function AppController() {
 
     if (isConnected === null) {
         return (
-                <main className="min-h-dvh bg-[#060609] flex items-center justify-center">
-                <div className="text-zinc-600 text-sm">Loading...</div>
+            <main className="min-h-dvh bg-[#060609] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#5546FF] to-[#fc6432] flex items-center justify-center shadow-lg shadow-[#5546FF]/20 animate-pulse">
+                        <Zap className="w-6 h-6 text-white fill-current" />
+                    </div>
+                    <p className="text-zinc-500 text-sm font-medium">Loading Jackpot Wall...</p>
+                </div>
             </main>
         );
     }
@@ -44,7 +50,7 @@ export default function AppController() {
     return (isConnected && view === 'dashboard') ? (
         <div className="min-h-dvh py-8 lg:py-12 relative overflow-hidden">
             {/* Background for Dashboard (Subtle variant) */}
-            <div className="fixed inset-0 -z-10 bg-[#020108] opacity-40" />
+            <div className="fixed inset-0 -z-10 bg-[#060609] opacity-40" />
             <Jackpot onBackToLanding={() => setView('landing')} />
         </div>
     ) : (

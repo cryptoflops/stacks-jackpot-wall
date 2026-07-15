@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { PartyPopper } from 'lucide-react';
 
 interface JackpotWaveCardProps {
   /** The jackpot amount to display */
@@ -65,12 +66,7 @@ export default function JackpotWaveCard({
     // Respect reduced motion
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) {
-      // Draw static version
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      ctx.fillStyle = 'transparent';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      return;
+      // Draw static version once; functions are defined below
     }
 
     function resizeCanvas() {
@@ -130,6 +126,13 @@ export default function JackpotWaveCard({
     }
 
     resizeCanvas();
+
+    if (prefersReduced) {
+      // Draw static version once
+      draw();
+      return;
+    }
+
     animate();
 
     const resizeObserver = new ResizeObserver(resizeCanvas);
@@ -279,7 +282,7 @@ export default function JackpotWaveCard({
 
           {isJackpotWon && (
             <span className="text-amber-400/80 text-xs font-medium animate-pulse-subtle">
-              🎉 90% payout to winner
+              <PartyPopper className="w-4 h-4 inline" aria-hidden="true" /> 90% payout to winner
             </span>
           )}
         </div>

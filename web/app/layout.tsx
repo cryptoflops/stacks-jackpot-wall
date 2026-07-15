@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-outfit",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "700"],
   variable: "--font-mono",
 });
 
@@ -30,6 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.className} ${jetbrainsMono.variable}`}>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#5546FF] focus:text-white focus:rounded-lg">
+          Skip to content
+        </a>
+        <Toaster richColors />
         {children}
       </body>
     </html>

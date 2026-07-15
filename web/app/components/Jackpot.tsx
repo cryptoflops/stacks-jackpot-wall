@@ -23,6 +23,7 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import Footer from './Footer';
 import JackpotWaveCard from '@/components/ui/jackpot-wave-card';
 
@@ -271,6 +272,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                 },
                 onFinish: (data) => {
                     console.log('✅ Transaction broadcasted:', data);
+                    toast.success('Transaction broadcasted!', {
+                        description: enterJackpot ? 'Your jackpot entry has been submitted.' : 'Your message has been posted to the wall.',
+                    });
 
                     // Optimistic update for history
                     const optimisticEvent: FeedEvent = {
@@ -296,6 +300,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             });
         } catch (e) {
             console.error('❌ Failed to create transaction:', e);
+            toast.error('Transaction failed', {
+                description: 'Please try again or check your wallet connection.',
+            });
             setIsLoading(false);
         }
     };
@@ -353,7 +360,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                     </div>
                 </button>
 
-                <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+                <nav className="flex flex-col gap-2 pb-2 lg:pb-0">
                     <button
                         onClick={() => setActiveTab('board')}
                         className={cn(
@@ -382,13 +389,13 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#5546FF] to-[#fc6432] shadow-lg shadow-[#5546FF]/20" />
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
-                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter">Connected</p>
+                                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Connected</p>
                                     {userReputation && userReputation.score > 0 && (
                                         <a
                                             href={`https://www.talentprotocol.com/passport/${userReputation.passport_id}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-1 bg-[#5546FF]/20 text-[#5546FF] px-1.5 py-0.5 rounded-md text-[8px] font-black border border-[#5546FF]/30 hover:bg-[#5546FF]/30 transition-all"
+                                            className="flex items-center gap-1 bg-[#5546FF]/20 text-[#5546FF] px-1.5 py-0.5 rounded-md text-[10px] font-bold border border-[#5546FF]/30 hover:bg-[#5546FF]/30 transition-all"
                                         >
                                             <Zap className="w-2 h-2 fill-current" />
                                             SCORE: {userReputation.score}
@@ -400,7 +407,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                         </div>
                         <button
                             onClick={() => { userSession.signUserOut(); window.location.reload(); }}
-                            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[10px] font-black text-zinc-400 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5 uppercase tracking-widest active:scale-[0.98]"
+                            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[10px] font-bold text-zinc-400 hover:text-[#fc6432] hover:bg-[#fc6432]/10 transition-all border border-white/5 uppercase tracking-widest active:scale-[0.98]"
                         >
                             <LogOut className="w-3.5 h-3.5" />
                             Disconnect
@@ -416,7 +423,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
 
                     {showDebug && (
                         <div className="p-4 rounded-2xl bg-black/60 border border-white/10 text-[10px] font-mono text-zinc-400 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4">
-                            <p className="font-black text-[#5546FF] mb-2 uppercase border-b border-white/5 pb-2">Diagnostic Data</p>
+                            <p className="font-bold text-[#5546FF] mb-2 uppercase border-b border-white/5 pb-2">Diagnostic Data</p>
                             <p>NETWORK: {process.env.NEXT_PUBLIC_NETWORK || 'testnet'}</p>
                             <p className="break-all">JACKPOT CONTRACT: {JACKPOT_CONTRACT}</p>
                             <p className="break-all">FREE CONTRACT: {FREE_CONTRACT}</p>
@@ -428,7 +435,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
             </aside>
 
             {/* Main Content Viewport */}
-            <main className="flex flex-col gap-8 min-w-0">
+            <main id="main-content" className="flex flex-col gap-8 min-w-0">
                 <AnimatePresence mode="wait">
                     {activeTab === 'board' ? (
                         <motion.div
@@ -518,7 +525,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                 <div>
                                                     <div className="flex items-center gap-1.5">
                                                         <p className="font-bold text-sm">Jackpot Entry</p>
-                                                        <span className="text-[8px] font-black uppercase bg-amber-400/20 text-amber-400 px-1 py-0.5 rounded border border-amber-400/30 tracking-wider">
+                                                        <span className="text-[10px] font-bold uppercase bg-amber-400/20 text-amber-400 px-1 py-0.5 rounded border border-amber-400/30 tracking-wider">
                                                             WIN STX
                                                         </span>
                                                     </div>
@@ -548,7 +555,7 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                         onClick={handlePost}
                                         disabled={isLoading || !message}
                                         className={cn(
-                                            "w-full py-6 rounded-3xl font-black uppercase tracking-[0.2em] text-sm transition-all shadow-2xl active:scale-[0.98] border border-white/10 disabled:cursor-not-allowed disabled:opacity-80",
+                                            "w-full py-6 rounded-3xl font-bold uppercase tracking-widest text-sm transition-all shadow-2xl active:scale-[0.98] border border-white/10 disabled:cursor-not-allowed disabled:opacity-80",
                                             message 
                                                 ? enterJackpot 
                                                     ? "bg-gradient-to-tr from-[#5546FF] to-[#fc6432] text-white shadow-[#5546FF]/10" 
@@ -599,9 +606,9 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                                     >
                                                         <div className="flex justify-between items-start mb-3">
                                                             <div className="flex items-center gap-2">
-                                                                <p className="text-[10px] font-black text-[#5546FF] uppercase tracking-tighter">Post #{evt.data?.id || (evt.type === 'jackpot-won' ? 'WIN' : 'TX')}</p>
+                                                                <p className="text-[10px] font-bold text-[#5546FF] uppercase tracking-tighter">Post #{evt.data?.id || (evt.type === 'jackpot-won' ? 'WIN' : 'TX')}</p>
                                                                 {reputationMap[evt.data?.poster] > 0 && (
-                                                                    <div className="flex items-center gap-1 bg-[#fc6432]/20 text-[#fc6432] px-1.5 py-0.5 rounded-md text-[8px] font-black border border-[#fc6432]/30 shadow-[0_0_10px_rgba(252,100,50,0.1)]">
+                                                                    <div className="flex items-center gap-1 bg-[#fc6432]/20 text-[#fc6432] px-1.5 py-0.5 rounded-md text-[10px] font-bold border border-[#fc6432]/30 shadow-[0_0_10px_rgba(252,100,50,0.1)]">
                                                                         <Trophy className="w-2 h-2" />
                                                                         {reputationMap[evt.data?.poster]}
                                                                     </div>
@@ -668,13 +675,13 @@ export default function Jackpot({ onBackToLanding }: JackpotProps) {
                                             <div className="flex justify-between items-start">
                                                 <div className="flex items-center gap-2">
                                                     <p className={cn(
-                                                        "text-[10px] font-black uppercase px-2 py-0.5 rounded-md",
+                                                        "text-[10px] font-bold uppercase px-2 py-0.5 rounded-md",
                                                         evt.type === 'jackpot-won' ? "bg-amber-400/20 text-amber-400" : "bg-[#fc6432]/20 text-[#fc6432]"
                                                     )}>
                                                         {evt.type === 'jackpot-won' ? 'Jackpot Won' : 'Message Posted'}
                                                     </p>
                                                     {reputationMap[evt.data?.poster] > 0 && (
-                                                        <div className="flex items-center gap-1 bg-[#5546FF]/20 text-[#5546FF] px-2 py-0.5 rounded-md text-[9px] font-black border border-[#5546FF]/30">
+                                                        <div className="flex items-center gap-1 bg-[#5546FF]/20 text-[#5546FF] px-2 py-0.5 rounded-md text-[10px] font-bold border border-[#5546FF]/30">
                                                             <Zap className="w-2.5 h-2.5 fill-current" />
                                                             BUILDER SCORE: {reputationMap[evt.data?.poster]}
                                                         </div>

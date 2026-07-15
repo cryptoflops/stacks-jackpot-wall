@@ -110,11 +110,11 @@ export default function WebGLBackground() {
     }, []);
 
     if (reduceMotion) {
-        return <div className="fixed inset-0 -z-10 bg-[#020108] w-full h-full" />;
+        return <div className="fixed inset-0 -z-10 bg-[#060609] w-full h-full" />;
     }
 
     return (
-        <div className="fixed inset-0 -z-10 bg-[#020108] w-full h-full overflow-hidden">
+        <div className="fixed inset-0 -z-10 bg-[#060609] w-full h-full overflow-hidden">
             <Canvas gl={{ antialias: false, stencil: false, depth: false }} dpr={[1, 2]}>
                 <AuroraMaterial />
             </Canvas>

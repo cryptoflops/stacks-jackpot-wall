@@ -1,10 +1,13 @@
 import { Providers } from './components/Providers';
 import AppController from './components/AppController';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function Home() {
   return (
-    <Providers>
-      <AppController />
-    </Providers>
+    <ErrorBoundary>
+      <Providers>
+        <AppController />
+      </Providers>
+    </ErrorBoundary>
   );
 }

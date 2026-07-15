@@ -31,7 +31,7 @@ export default function Footer() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-zinc-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em] group active:scale-[0.98]"
+                        className="flex items-center gap-2 text-zinc-500 hover:text-white transition-all text-[10px] font-bold uppercase tracking-[0.2em] group active:scale-[0.98]"
                     >
                         <span className="text-zinc-600 group-hover:text-[#5546FF] transition-colors">
                             {link.icon}
@@ -44,7 +44,7 @@ export default function Footer() {
             <div className="flex flex-col items-center gap-2">
                 <div className="w-8 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 <p className="text-[9px] font-bold text-zinc-700 uppercase tracking-[0.3em]">
-                    © 2025 Jackpot Wall • On-Chain Reputation
+                    © 2026 Jackpot Wall • On-Chain Reputation
                 </p>
             </div>
         </footer>
