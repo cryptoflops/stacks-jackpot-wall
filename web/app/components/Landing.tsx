@@ -16,7 +16,7 @@ interface LandingProps {
 
 export default function Landing({ onConnect }: LandingProps) {
     return (
-        <div className="relative min-h-dvh overflow-x-hidden bg-background">
+        <main id="main-content" className="relative min-h-dvh overflow-x-hidden bg-background">
             <WebGLBackground />
             <CinematicHero
                 brandName="JACKPOT WALL"
@@ -39,6 +39,6 @@ export default function Landing({ onConnect }: LandingProps) {
             <LiveStats />
             <RecentActivity />
             <Footer />
-        </div>
+        </main>
     );
 }

@@ -112,14 +112,8 @@ export function CinematicHero({
         </h1>
       </div>
 
-      {/* BACKGROUND LAYER 2: Tactile CTA Buttons */}
+      {/* CTA Button */}
       <div className="cta-wrapper relative z-10 flex flex-col items-center justify-center text-center w-full px-4">
-        <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
-          {ctaHeading}
-        </h2>
-        <p className="text-zinc-400 text-lg md:text-xl mb-12 max-w-xl mx-auto font-light leading-relaxed">
-          {ctaDescription}
-        </p>
         <div className="flex justify-center">
           <button
             onClick={onConnect}
@@ -144,7 +138,7 @@ export function CinematicHero({
       <div className="relative z-10 flex items-center justify-center w-full px-4" style={{ perspective: "1500px" }}>
         <div
           ref={mainCardRef}
-          className="main-card premium-depth-card relative overflow-hidden gsap-reveal flex items-center justify-center pointer-events-auto w-[92vw] md:w-[85vw] max-w-3xl h-auto min-h-[400px] md:min-h-[500px] rounded-[32px] md:rounded-[40px]"
+          className="main-card premium-depth-card relative overflow-hidden gsap-reveal flex items-center justify-center pointer-events-auto w-[92vw] md:w-[85vw] max-w-3xl h-auto min-h-[280px] md:min-h-[450px] rounded-[32px] md:rounded-[40px]"
         >
           <div className="card-sheen" aria-hidden="true" />
 
