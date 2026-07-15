@@ -95,7 +95,7 @@ export function CinematicHero({
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-background text-white font-sans antialiased", className)}
+      className={cn("relative w-full min-h-dvh flex flex-col items-center justify-center gap-8 bg-background text-white font-sans antialiased py-16", className)}
       style={{ perspective: "1500px" }}
       {...props}
     >
@@ -103,7 +103,7 @@ export function CinematicHero({
       <div className="bg-grid-theme absolute inset-0 z-0 pointer-events-none opacity-50" aria-hidden="true" />
 
       {/* BACKGROUND LAYER: Hero Texts */}
-      <div className="hero-text-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4 will-change-transform transform-style-3d">
+      <div className="hero-text-wrapper relative z-10 flex flex-col items-center justify-center text-center w-full px-4">
         <h1 className="text-track gsap-reveal text-3d-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tighter mb-2">
           {tagline1}
         </h1>
@@ -113,7 +113,7 @@ export function CinematicHero({
       </div>
 
       {/* BACKGROUND LAYER 2: Tactile CTA Buttons */}
-      <div className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4 gsap-reveal pointer-events-auto will-change-transform">
+      <div className="cta-wrapper relative z-10 flex flex-col items-center justify-center text-center w-full px-4">
         <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
           {ctaHeading}
         </h2>
@@ -154,11 +154,11 @@ export function CinematicHero({
         </div>
       </div>
 
-      {/* FOREGROUND LAYER: The Physical Deep Blue Card */}
-      <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" style={{ perspective: "1500px" }}>
+      {/* PHONE MOCKUP CARD */}
+      <div className="relative z-10 flex items-center justify-center w-full px-4" style={{ perspective: "1500px" }}>
         <div
           ref={mainCardRef}
-          className="main-card premium-depth-card relative overflow-hidden gsap-reveal flex items-center justify-center pointer-events-auto w-[92vw] md:w-[85vw] h-[92vh] md:h-[85vh] rounded-[32px] md:rounded-[40px]"
+          className="main-card premium-depth-card relative overflow-hidden gsap-reveal flex items-center justify-center pointer-events-auto w-[92vw] md:w-[85vw] max-w-3xl h-auto min-h-[400px] md:min-h-[500px] rounded-[32px] md:rounded-[40px]"
         >
           <div className="card-sheen" aria-hidden="true" />
 
