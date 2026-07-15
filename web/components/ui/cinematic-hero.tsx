@@ -118,18 +118,14 @@ export function CinematicHero({
           <button
             onClick={onConnect}
             aria-label="Connect your Stacks wallet"
-            className="btn-modern-light flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#5546FF] focus:ring-offset-2 focus:ring-offset-[#020108]"
+            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-[#5546FF] hover:bg-[#4436EE] text-white rounded-2xl font-bold text-lg transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#5546FF] focus:ring-offset-2 focus:ring-offset-[#020108] shadow-lg shadow-[#5546FF]/25 hover:shadow-[#5546FF]/40"
           >
-            <svg className="w-7 h-7 transition-transform group-hover:scale-105" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="2" y="6" width="20" height="12" rx="2" />
-              <path d="M12 18v-4" />
-              <circle cx="8" cy="12" r="1" />
-              <circle cx="16" cy="12" r="1" />
+            <svg className="w-6 h-6 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h13a1 1 0 0 1 0 2h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-1" />
+              <rect x="2" y="9" width="20" height="10" rx="2" />
+              <circle cx="12" cy="15" r="2" />
             </svg>
-            <div className="text-left">
-              <div className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase mb-[-2px]">Stacks</div>
-              <div className="text-xl font-bold leading-none tracking-tight">Connect Wallet</div>
-            </div>
+            Connect Wallet
           </button>
         </div>
       </div>
