@@ -2,6 +2,9 @@
 
 import React from 'react';
 import { CinematicHero } from '@/components/ui/cinematic-hero';
+import HowItWorks from '@/components/landing/HowItWorks';
+import LiveStats from '@/components/landing/LiveStats';
+import RecentActivity from '@/components/landing/RecentActivity';
 import Footer from './Footer';
 
 interface LandingProps {
@@ -10,7 +13,7 @@ interface LandingProps {
 
 export default function Landing({ onConnect }: LandingProps) {
     return (
-        <div className="relative min-h-dvh overflow-x-hidden bg-[#060609]">
+        <div className="relative min-h-dvh overflow-x-hidden bg-background">
             <CinematicHero
                 brandName="JACKPOT WALL"
                 tagline1="Post on-chain,"
@@ -28,9 +31,10 @@ export default function Landing({ onConnect }: LandingProps) {
                 ctaDescription="Join the decentralized scoreboard. Post to the wall, enter the jackpot, and win STX on the Stacks blockchain."
                 onConnect={onConnect}
             />
-            <div className="mt-auto w-full">
-                <Footer />
-            </div>
+            <HowItWorks />
+            <LiveStats />
+            <RecentActivity />
+            <Footer />
         </div>
     );
 }

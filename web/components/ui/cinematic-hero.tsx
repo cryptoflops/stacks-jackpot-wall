@@ -148,7 +148,7 @@ export function CinematicHero({
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-[#060609] text-white font-sans antialiased", className)}
+      className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-background text-white font-sans antialiased", className)}
       style={{ perspective: "1500px" }}
       {...props}
     >

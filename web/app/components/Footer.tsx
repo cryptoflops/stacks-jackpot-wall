@@ -1,52 +1,34 @@
-'use client';
-
-import React from 'react';
-import { Github, Zap, Globe } from 'lucide-react';
+"use client";
+import { Github, Globe, TrendingUp } from "lucide-react";
 
 export default function Footer() {
-    const links = [
-        {
-            label: 'GitHub',
-            href: 'https://github.com/cryptoflops/stacks-jackpot-wall',
-            icon: <Github className="w-3.5 h-3.5" />
-        },
-        {
-            label: 'Talent Protocol',
-            href: 'https://www.talentprotocol.com',
-            icon: <Zap className="w-3.5 h-3.5" />
-        },
-        {
-            label: 'Stacks',
-            href: 'https://stacks.co',
-            icon: <Globe className="w-3.5 h-3.5" />
-        }
-    ];
-
-    return (
-        <footer className="w-full py-12 px-4 flex flex-col items-center gap-6 relative z-10">
-            <div className="flex flex-wrap justify-center items-center gap-4 lg:gap-8">
-                {links.map((link, i) => (
-                    <a
-                        key={i}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-zinc-500 hover:text-white transition-all text-[10px] font-bold uppercase tracking-[0.2em] group active:scale-[0.98]"
-                    >
-                        <span className="text-zinc-600 group-hover:text-[#5546FF] transition-colors">
-                            {link.icon}
-                        </span>
-                        {link.label}
-                    </a>
-                ))}
+  return (
+    <footer className="border-t border-border bg-background/80 backdrop-blur-xl relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#5546FF] to-[#fc6432] flex items-center justify-center">
+              <TrendingUp size={16} className="text-white" />
             </div>
-
-            <div className="flex flex-col items-center gap-2">
-                <div className="w-8 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                <p className="text-[9px] font-bold text-zinc-700 uppercase tracking-[0.3em]">
-                    © 2026 Jackpot Wall • On-Chain Reputation
-                </p>
+            <div>
+              <p className="text-foreground font-bold text-sm">Jackpot Wall</p>
+              <p className="text-muted-foreground text-xs">The decentralized scoreboard where history is etched on-chain.</p>
             </div>
-        </footer>
-    );
+          </div>
+          <div className="flex items-center gap-6">
+            <a href="https://github.com/cryptoflops/stacks-jackpot-wall" target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 text-xs font-medium">
+              <Github size={14} /> GitHub
+            </a>
+            <a href="https://www.stacks.co" target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-[#5546FF] transition-colors flex items-center gap-1.5 text-xs font-medium">
+              <Globe size={14} /> Stacks
+            </a>
+          </div>
+        </div>
+        <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-muted-foreground text-xs">&copy; {new Date().getFullYear()} Jackpot Wall. All rights reserved.</p>
+          <span className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Built on Bitcoin. Secured by Stacks.</span>
+        </div>
+      </div>
+    </footer>
+  );
 }
