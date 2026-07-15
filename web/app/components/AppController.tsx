@@ -5,7 +5,6 @@ import { userSession } from '@/lib/stacks';
 import Landing from './Landing';
 import Jackpot from './Jackpot';
 import { useConnect } from '@stacks/connect-react';
-import ThemeToggle from '@/components/ThemeToggle';
 
 export default function AppController() {
     const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -39,9 +38,6 @@ export default function AppController() {
         return (
             <div className="min-h-dvh py-8 lg:py-12 relative overflow-hidden">
                 <div className="fixed inset-0 -z-10 bg-background opacity-40" />
-                <div className="fixed top-4 right-4 z-50">
-                    <ThemeToggle />
-                </div>
                 <Jackpot onBackToLanding={() => setView('landing')} />
             </div>
         );
@@ -49,9 +45,6 @@ export default function AppController() {
 
     return (
         <>
-            <div className="fixed top-4 right-4 z-50">
-                <ThemeToggle />
-            </div>
             <Landing onConnect={handleConnect} />
         </>
     );

@@ -30,10 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||(!t&&window.matchMedia("(prefers-color-scheme: light)").matches)){document.documentElement.classList.remove("dark")}else{document.documentElement.classList.add("dark")}}catch(e){}})();` }} />
-      </head>
-      <body className={`${outfit.className} ${jetbrainsMono.variable} bg-background text-foreground`}>
+      <body className={`${outfit.className} ${jetbrainsMono.variable} bg-[#060609] text-zinc-100`}>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#5546FF] focus:text-white focus:rounded-lg">
           Skip to content
         </a>

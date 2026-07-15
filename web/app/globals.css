@@ -3,30 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 98%;
-  --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 245 100% 64%;
-  /* Stacks #5546FF */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 245 100% 64%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 245 100% 64%;
-  --radius: 1rem;
-}
-
-.dark {
   --background: 240 10% 2%;
   --foreground: 0 0% 98%;
   --card: 240 10% 4.9%;
@@ -34,6 +10,7 @@
   --popover: 240 10% 3.9%;
   --popover-foreground: 0 0% 98%;
   --primary: 245 100% 64%;
+  /* Stacks #5546FF */
   --primary-foreground: 0 0% 100%;
   --secondary: 240 3.7% 15.9%;
   --secondary-foreground: 0 0% 98%;
@@ -46,6 +23,7 @@
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
   --ring: 245 100% 64%;
+  --radius: 1rem;
 }
 
 html {
@@ -53,9 +31,7 @@ html {
 }
 
 body {
-  @apply antialiased;
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  @apply antialiased bg-[#060609] text-zinc-100;
   background-image:
     radial-gradient(at 0% 0%, hsla(245, 100%, 10%, 1) 0, transparent 50%),
     radial-gradient(at 50% 0%, hsla(245, 100%, 64%, 0.08) 0, transparent 50%),
