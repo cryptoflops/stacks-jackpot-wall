@@ -118,14 +118,12 @@ export function CinematicHero({
           <button
             onClick={onConnect}
             aria-label="Connect your Stacks wallet"
-            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-[#5546FF] hover:bg-[#4436EE] text-white rounded-2xl font-bold text-lg transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#5546FF] focus:ring-offset-2 focus:ring-offset-[#020108] shadow-lg shadow-[#5546FF]/25 hover:shadow-[#5546FF]/40"
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-semibold text-base transition-all hover:gap-4 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#060609]"
           >
-            <svg className="w-6 h-6 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h13a1 1 0 0 1 0 2h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-1" />
-              <rect x="2" y="9" width="20" height="10" rx="2" />
-              <circle cx="12" cy="15" r="2" />
-            </svg>
             Connect Wallet
+            <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       </div>
