@@ -53,7 +53,9 @@ html {
 }
 
 body {
-  @apply bg-background text-foreground antialiased;
+  @apply antialiased;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
   background-image:
     radial-gradient(at 0% 0%, hsla(245, 100%, 10%, 1) 0, transparent 50%),
     radial-gradient(at 50% 0%, hsla(245, 100%, 64%, 0.08) 0, transparent 50%),
@@ -63,7 +65,10 @@ body {
 
 @layer components {
   .glass {
-    @apply bg-card/40 backdrop-blur-xl border border-border;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: hsl(var(--card) / 0.4);
+    border: 1px solid hsl(var(--border) / 0.5);
     box-shadow: 0 25px 50px -12px rgba(85, 70, 255, 0.08);
   }
 
