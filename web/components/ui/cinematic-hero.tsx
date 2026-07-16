@@ -95,7 +95,7 @@ export function CinematicHero({
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-full h-dvh flex flex-col items-center justify-center bg-background text-white font-sans antialiased", className)}
+      className={cn("relative w-full min-h-dvh flex flex-col items-center justify-center gap-6 bg-background text-white font-sans antialiased py-8", className)}
       style={{ perspective: "1500px" }}
       {...props}
     >
