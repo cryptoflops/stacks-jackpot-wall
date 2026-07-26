@@ -1,9 +1,9 @@
 # Changelog
 
-## [Unreleased] - 2026-07-24
+## [Unreleased] - 2026-07-26
 
 ### Changed
-- Optimized RPC batch requests for lower latency
+- Refactored wallet connection flow for reliability
 
 ### Fixed
-- Fixed edge case in balance display for micro amounts
+- Addressed timeout handling for slow RPC responses
