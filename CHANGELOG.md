@@ -6,4 +6,4 @@
 - Enhanced mobile responsiveness on smaller screens
 
 ### Fixed
-- Fixed decimal formatting for sub-STX amounts
+- Corrected gas estimation for complex contract calls
