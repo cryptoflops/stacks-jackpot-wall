@@ -1,9 +1,9 @@
 # Changelog
 
-## [Unreleased] - 2026-07-26
+## [Unreleased] - 2026-07-27
 
 ### Changed
-- Refactored wallet connection flow for reliability
+- Enhanced mobile responsiveness on smaller screens
 
 ### Fixed
-- Addressed timeout handling for slow RPC responses
+- Fixed decimal formatting for sub-STX amounts
