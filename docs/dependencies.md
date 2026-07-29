@@ -1,12 +1,12 @@
 # Dependency Decisions
 
-Updated: 2026-07-26
+Updated: 2026-07-29
 
 ## Core
-- @stacks/transactions: ^6.17.0
+- @stacks/transactions: ^6.15.0
 - @stacks/network: ^6.17.0
 
 ## Notes
-- Next.js App Router for better streaming SSR
+- Using hiro SDK for read-only calls
 
-Audit: 958vzwjs
+Audit: tl9e27se
