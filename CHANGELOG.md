@@ -3,7 +3,7 @@
 ## [Unreleased] - 2026-07-31
 
 ### Changed
-- Optimized RPC batch requests for lower latency
+- Reduced bundle size via tree-shaking unused modules
 
 ### Fixed
-- Fixed decimal formatting for sub-STX amounts
+- Corrected gas estimation for complex contract calls
