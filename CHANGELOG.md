@@ -1,9 +1,9 @@
 # Changelog
 
-## [Unreleased] - 2026-07-31
+## [Unreleased] - 2026-08-01
 
 ### Changed
-- Reduced bundle size via tree-shaking unused modules
+- Updated dependencies to latest stable versions
 
 ### Fixed
-- Corrected gas estimation for complex contract calls
+- Resolved race condition in wallet state sync
