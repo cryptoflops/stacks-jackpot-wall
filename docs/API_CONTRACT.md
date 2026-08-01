@@ -1,9 +1,9 @@
 # API Constraints
 
-Validated: 2026-07-30
+Validated: 2026-08-01
 
 ## Stacks Node Compatibility
 - Assume v2/info endpoint remains stable
 - Handle missing optional values gracefully in Clarity responses
 
-Audit hash: 3d4fbpl1
+Audit hash: wwjlqcop
