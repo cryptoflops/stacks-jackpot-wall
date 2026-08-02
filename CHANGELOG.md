@@ -1,9 +1,9 @@
 # Changelog
 
-## [Unreleased] - 2026-08-01
+## [Unreleased] - 2026-08-02
 
 ### Changed
-- Updated dependencies to latest stable versions
+- Reduced bundle size via tree-shaking unused modules
 
 ### Fixed
-- Resolved race condition in wallet state sync
+- Fixed decimal formatting for sub-STX amounts
