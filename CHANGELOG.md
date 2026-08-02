@@ -3,7 +3,7 @@
 ## [Unreleased] - 2026-08-02
 
 ### Changed
-- Reduced bundle size via tree-shaking unused modules
+- Improved error handling in contract interactions
 
 ### Fixed
-- Fixed decimal formatting for sub-STX amounts
+- Corrected gas estimation for complex contract calls
