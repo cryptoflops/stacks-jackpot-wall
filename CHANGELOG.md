@@ -1,9 +1,9 @@
 # Changelog
 
-## [Unreleased] - 2026-08-02
+## [Unreleased] - 2026-08-03
 
 ### Changed
-- Improved error handling in contract interactions
+- Reduced bundle size via tree-shaking unused modules
 
 ### Fixed
 - Corrected gas estimation for complex contract calls
