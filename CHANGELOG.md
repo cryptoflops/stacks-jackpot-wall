@@ -3,7 +3,7 @@
 ## [Unreleased] - 2026-08-03
 
 ### Changed
-- Reduced bundle size via tree-shaking unused modules
+- Optimized RPC batch requests for lower latency
 
 ### Fixed
-- Corrected gas estimation for complex contract calls
+- Resolved race condition in wallet state sync
